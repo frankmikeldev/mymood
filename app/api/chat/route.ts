@@ -1,25 +1,30 @@
+export const dynamic = 'force-dynamic'; // 1. Fixes the Vercel Build Error
+
 import Groq from "groq-sdk";
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY!,
-});
+// 2. Initialize safely to prevent "Missing API Key" crashes during build
+const apiKey = process.env.GROQ_API_KEY;
+const groq = apiKey ? new Groq({ apiKey }) : null;
 
 export async function POST(req: Request) {
   try {
-    const { messages, sessionId } = await req.json();
-
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" });
+    // Check if Groq was initialized
+    if (!groq) {
+      console.error("GROQ_API_KEY is missing from environment variables");
+      return NextResponse.json({ error: "AI Configuration Error" }, { status: 500 });
     }
 
+    const { messages, sessionId } = await req.json();
+    const supabase = await createClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Fetch Mood
     const { data: mood } = await supabase
       .from("mood_entries")
       .select("mood")
@@ -30,6 +35,7 @@ export async function POST(req: Request) {
 
     const currentMood = mood?.mood || "unknown";
 
+    // Fetch Memories
     const { data: memories } = await supabase
       .from("user_memory")
       .select("memory")
@@ -38,37 +44,24 @@ export async function POST(req: Request) {
 
     const memoryContext = memories?.map((m) => m.memory).join("\n") || "";
 
+    // Generate AI Response
     const completion = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
       messages: [
         {
           role: "system",
           content: `
-You are MyMood's AI therapist assistant.
+            You are MyMood's AI therapist assistant.
+            User mood: ${currentMood}
+            User memory: ${memoryContext}
 
-User mood: ${currentMood}
-
-User memory:
-${memoryContext}
-
-Your job:
-
-Be supportive and empathetic.
-Help with stress, anxiety, sadness.
-Suggest healthy coping strategies.
-
-You can recommend:
-- breathing exercises
-- journaling
-- walking
-- meditation
-- talking to friends
-- sleep improvement
-
-If the user sounds very distressed, gently suggest seeking professional help.
-
-Keep responses supportive and short.
-`,
+            Your job:
+            - Be supportive and empathetic.
+            - Help with stress, anxiety, and sadness.
+            - Suggest healthy coping strategies like breathing, journaling, or meditation.
+            - If the user is very distressed, suggest professional help.
+            Keep responses supportive and short.
+          `,
         },
         ...messages,
       ],
@@ -76,6 +69,7 @@ Keep responses supportive and short.
 
     const reply = completion.choices[0].message.content;
 
+    // Save to History
     await supabase.from("chat_messages").insert({
       session_id: sessionId,
       role: "assistant",
@@ -84,7 +78,7 @@ Keep responses supportive and short.
 
     return NextResponse.json({ reply });
   } catch (err) {
-    console.error(err);
-    return NextResponse.json({ error: "AI error" });
+    console.error("Chat API Error:", err);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
