@@ -1,156 +1,102 @@
 "use client";
 
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, PieChart, Pie, Cell,
 } from "recharts";
 
+const MOOD_LABELS: Record<number, string> = {
+  1: "Very Sad 😞",
+  2: "Sad 😕",
+  3: "Neutral 😐",
+  4: "Happy 🙂",
+  5: "Very Happy 😄",
+};
+
+const MOOD_COLORS: Record<number, string> = {
+  1: "#ef4444",
+  2: "#f97316",
+  3: "#eab308",
+  4: "#22c55e",
+  5: "#3b82f6",
+};
+
 export default function TrackerChart({ data }: { data: any[] }) {
-  const chartData = data
-    .slice(0, 7)
-    .reverse()
-    .map((d) => ({
-      day: new Date(d.created_at).toLocaleDateString("en-US", {
-        weekday: "short",
-      }),
-      mood: d.mood,
-    }));
+  const chartData = data.slice(0, 14).reverse().map((d) => ({
+    day: new Date(d.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+    mood: d.mood,
+  }));
 
-  // ✅ Average mood
-  const avgMood =
-    chartData.length > 0
-      ? (chartData.reduce((acc, cur) => acc + cur.mood, 0) / chartData.length).toFixed(1)
-      : null;
+  const avgMood = chartData.length
+    ? (chartData.reduce((acc, cur) => acc + cur.mood, 0) / chartData.length).toFixed(1)
+    : null;
 
-  // ✅ Mood name + emoji
-  const moodLabel = (mood: number) => {
-    switch (mood) {
-      case 1:
-        return "Very Sad 😞";
-      case 2:
-        return "Sad 😕";
-      case 3:
-        return "Neutral 😐";
-      case 4:
-        return "Happy 🙂";
-      case 5:
-        return "Very Happy 😄";
-      default:
-        return "";
-    }
-  };
-
-  // ✅ Mood frequency for donut chart
   const moodCounts: Record<number, number> = {};
-  chartData.forEach((d) => {
-    moodCounts[d.mood] = (moodCounts[d.mood] || 0) + 1;
-  });
-
+  chartData.forEach((d) => { moodCounts[d.mood] = (moodCounts[d.mood] || 0) + 1; });
   const total = chartData.length || 1;
   const moodBreakdown = Object.entries(moodCounts).map(([mood, count]) => ({
     mood: Number(mood),
-    label: moodLabel(Number(mood)),
+    label: MOOD_LABELS[Number(mood)],
     value: Math.round((count / total) * 100),
+    count,
   }));
 
-  const MOOD_COLORS = [
-    "var(--color-accent)", // Very Sad (purple accent)
-    "var(--color-accent-light)", // Sad (lighter)
-    "var(--color-text-muted)", // Neutral
-    "var(--color-accent-soft)", // Happy
-    "var(--color-accent)", // Very Happy again for consistency
-  ];
-
   return (
-    <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl p-6 shadow-sm space-y-10">
-      {/* ✅ Average Mood Summary */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-center sm:text-left bg-[var(--color-bg-main)] border border-[var(--color-border)] rounded-xl p-4">
-        <div>
-          <h3 className="text-lg font-semibold text-[var(--color-text-header)]">
-            Weekly Average Mood
-          </h3>
-          {avgMood ? (
-            <p className="text-[var(--color-text-body)] text-sm mt-1">
-              Based on your last {chartData.length} entries
-            </p>
-          ) : (
-            <p className="text-[var(--color-text-body)] text-sm mt-1">
-              No data yet — start logging moods!
-            </p>
+    <div className="space-y-6">
+
+      {/* Line Chart */}
+      <div className="bg-[var(--color-box)] border border-[var(--color-border)] rounded-2xl p-6 shadow-sm">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">Mood Trend</h3>
+            <p className="text-sm text-[var(--color-text-muted)] mt-0.5">Last 14 entries</p>
+          </div>
+          {avgMood && (
+            <div className="text-right">
+              <p className="text-2xl font-bold text-[var(--color-accent)]">{avgMood}<span className="text-sm font-normal text-[var(--color-text-muted)]">/5</span></p>
+              <p className="text-xs text-[var(--color-text-muted)]">avg mood</p>
+            </div>
           )}
         </div>
-        {avgMood && (
-          <div className="flex items-center justify-center mt-3 sm:mt-0 gap-2 text-xl font-semibold text-[var(--color-accent)]">
-            <span>{moodLabel(Number(avgMood)).split(" ")[1]}</span>
-            <span>{avgMood}/5</span>
-          </div>
-        )}
-      </div>
 
-      {/* ✅ Line Chart */}
-      <div>
-        <h3 className="text-lg font-semibold text-[var(--color-text-header)] mb-4 text-center">
-          Weekly Mood Trend
-        </h3>
-
-        <ResponsiveContainer width="100%" height={250}>
+        <ResponsiveContainer width="100%" height={240}>
           <LineChart data={chartData}>
             <defs>
-              <linearGradient id="moodLine" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="0%"
-                  stopColor="var(--color-accent)"
-                  stopOpacity={0.9}
-                />
-                <stop
-                  offset="100%"
-                  stopColor="var(--color-accent)"
-                  stopOpacity={0.1}
-                />
+              <linearGradient id="moodGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="var(--color-accent)" stopOpacity={0.3} />
+                <stop offset="100%" stopColor="var(--color-accent)" stopOpacity={0} />
               </linearGradient>
             </defs>
-
             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-            <XAxis dataKey="day" tick={{ fill: "var(--color-text-body)" }} />
-            <YAxis domain={[1, 5]} tick={{ fill: "var(--color-text-body)" }} />
+            <XAxis dataKey="day" tick={{ fill: "var(--color-text-muted)", fontSize: 11 }} />
+            <YAxis domain={[1, 5]} ticks={[1, 2, 3, 4, 5]} tick={{ fill: "var(--color-text-muted)", fontSize: 11 }} />
             <Tooltip
               contentStyle={{
-                backgroundColor: "var(--color-bg-card)",
+                background: "var(--color-box)",
                 border: "1px solid var(--color-border)",
-                borderRadius: "8px",
-                color: "var(--color-text-body)",
+                borderRadius: 8,
               }}
-              formatter={(value: any) => [`${moodLabel(Number(value))}`, "Mood"]}
+              formatter={(value: any) => [MOOD_LABELS[Number(value)], "Mood"]}
             />
             <Line
               type="monotone"
               dataKey="mood"
-              stroke="url(#moodLine)"
+              stroke="var(--color-accent)"
               strokeWidth={3}
-              dot={{ r: 5, fill: "var(--color-accent)" }}
+              dot={{ r: 5, fill: "var(--color-accent)", strokeWidth: 2, stroke: "var(--color-box)" }}
               activeDot={{ r: 7 }}
             />
           </LineChart>
         </ResponsiveContainer>
       </div>
 
-      {/* ✅ Mood Breakdown Donut */}
+      {/* Breakdown */}
       {moodBreakdown.length > 0 && (
-        <div className="text-center">
-          <h3 className="text-lg font-semibold text-[var(--color-text-header)] mb-4">
-            Mood Breakdown
-          </h3>
+        <div className="bg-[var(--color-box)] border border-[var(--color-border)] rounded-2xl p-6 shadow-sm">
+          <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-6">Mood Breakdown</h3>
 
-          <div className="flex flex-col sm:flex-row sm:justify-center items-center gap-6">
-            <ResponsiveContainer width="100%" height={200}>
+          <div className="flex flex-col sm:flex-row items-center gap-6">
+            <ResponsiveContainer width="100%" height={180}>
               <PieChart>
                 <Pie
                   data={moodBreakdown}
@@ -160,29 +106,29 @@ export default function TrackerChart({ data }: { data: any[] }) {
                   cy="50%"
                   innerRadius={50}
                   outerRadius={80}
-                  paddingAngle={5}
+                  paddingAngle={4}
                 >
-                  {moodBreakdown.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={MOOD_COLORS[entry.mood - 1] || "var(--color-accent)"}
-                    />
+                  {moodBreakdown.map((entry) => (
+                    <Cell key={entry.mood} fill={MOOD_COLORS[entry.mood] || "var(--color-accent)"} />
                   ))}
                 </Pie>
+                <Tooltip
+                  contentStyle={{
+                    background: "var(--color-box)",
+                    border: "1px solid var(--color-border)",
+                    borderRadius: 8,
+                  }}
+                  formatter={(value: any) => [`${value}%`]}
+                />
               </PieChart>
             </ResponsiveContainer>
 
-            <ul className="space-y-2 text-sm text-[var(--color-text-body)]">
-              {moodBreakdown.map((m) => (
-                <li key={m.mood} className="flex items-center gap-2">
-                  <span
-                    className="w-3 h-3 rounded-full"
-                    style={{
-                      backgroundColor:
-                        MOOD_COLORS[m.mood - 1] || "var(--color-accent)",
-                    }}
-                  ></span>
-                  {m.label} — {m.value}%
+            <ul className="space-y-2.5 text-sm w-full sm:w-auto">
+              {moodBreakdown.sort((a, b) => b.count - a.count).map((m) => (
+                <li key={m.mood} className="flex items-center gap-3">
+                  <span className="w-3 h-3 rounded-full shrink-0" style={{ background: MOOD_COLORS[m.mood] }} />
+                  <span className="text-[var(--color-text-primary)] flex-1">{m.label}</span>
+                  <span className="text-[var(--color-text-muted)] text-xs">{m.count}x · {m.value}%</span>
                 </li>
               ))}
             </ul>

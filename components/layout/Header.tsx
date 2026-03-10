@@ -81,12 +81,11 @@ export default function Header() {
 
           <nav className="flex gap-8 text-sm font-medium">
             {[
-              ["Home", "/"],
-              ["Mood", "/mood"],
-              ["Tips", "/tips"],
-              ["Diets", "/diets"],
-              ["Settings", "/settings"],
-            ].map(([label, href]) => (
+  ["Dashboard", "/dashboard"],
+  ["History", "/history"],
+  ["Insights", "/insights"],
+  ["Profile", "/settings"],
+].map(([label, href]) => (
               <Link
                 key={href}
                 href={href}

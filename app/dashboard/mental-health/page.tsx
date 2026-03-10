@@ -13,10 +13,10 @@ export default function MentalHealthPage() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-[var(--color-bg)] text-center">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 pt-20 lg:pt-0 bg-[var(--color-bg)] text-center">
       {/* Title */}
       <h1 className="text-2xl md:text-3xl font-semibold mb-8 text-[var(--color-text-primary)]">
-     What condition do you want help with?
+        What condition do you want help with?
       </h1>
 
       {/* Buttons */}

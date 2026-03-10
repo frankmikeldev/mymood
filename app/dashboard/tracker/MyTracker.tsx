@@ -19,10 +19,7 @@ export default function MyTracker() {
   useEffect(() => {
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        router.push("/login");
-        return;
-      }
+      if (!session) { router.push("/login"); return; }
 
       setUser(session.user);
       try {
@@ -35,13 +32,8 @@ export default function MyTracker() {
         setLoading(false);
       }
     };
-
     init();
   }, [router, supabase]);
-
-  const addOptimistic = (entry: any) => {
-    setCheckins((prev) => [entry, ...prev].slice(0, 30));
-  };
 
   const onCreate = async (payload: { mood: number; notes?: string; emotion?: string }) => {
     if (!user) return;
@@ -54,7 +46,7 @@ export default function MyTracker() {
       optimistic: true,
     };
 
-    addOptimistic(temp);
+    setCheckins((prev) => [temp, ...prev].slice(0, 30));
 
     try {
       const { createCheckin } = await import("@/lib/supabase/checkins");
@@ -66,31 +58,44 @@ export default function MyTracker() {
     }
   };
 
-  if (loading) return <div className="p-8 text-center">Loading...</div>;
-
-  if (!checkins.length)
-    return (
-      <div className="p-6">
-        <TrackerEmpty onCreate={onCreate} />
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-10 h-10 rounded-full border-4 border-[var(--color-accent)] border-t-transparent animate-spin" />
+        <p className="text-sm text-[var(--color-text-muted)]">Loading your tracker...</p>
       </div>
-    );
-
-  return (
-    <div className="p-4 sm:p-6 space-y-8">
-      <TrackerLogForm onCreate={onCreate} />
-      <TrackerChart data={checkins} />
-      <TrackerList entries={checkins} />
     </div>
   );
 
+  if (!checkins.length) return (
+    <div className="min-h-screen bg-[var(--color-bg)] p-6 md:p-10">
+      <div className="max-w-2xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-[var(--color-text-primary)]">Mood Tracker</h1>
+          <p className="text-[var(--color-text-muted)] mt-2">Log your emotions and understand your patterns.</p>
+        </div>
+        <TrackerEmpty onCreate={onCreate} />
+      </div>
+    </div>
+  );
 
   return (
-  <div className="p-6 space-y-6">
-    <TrackerLogForm onCreate={onCreate} />
-    <TrackerStreak entries={checkins} /> {/* ✅ new streak card */}
-    <TrackerChart data={checkins} />
-    <TrackerList entries={checkins} />
-  </div>
-);
+    <div className="min-h-screen bg-[var(--color-bg)] p-6 md:p-10">
+      <div className="max-w-4xl mx-auto space-y-8">
 
+        {/* Header */}
+        <div>
+          <h1 className="text-3xl font-bold text-[var(--color-text-primary)]">Mood Tracker</h1>
+          <p className="text-[var(--color-text-muted)] mt-2">
+            Log your emotions and understand your patterns.
+          </p>
+        </div>
+
+        <TrackerLogForm onCreate={onCreate} />
+        <TrackerStreak entries={checkins} />
+        <TrackerChart data={checkins} />
+        <TrackerList entries={checkins} />
+      </div>
+    </div>
+  );
 }
