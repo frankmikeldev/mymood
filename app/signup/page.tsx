@@ -44,31 +44,46 @@ export default function SignupPage() {
     setLoading(true);
 
     const { email, password, fullName } = data;
-    const { error } = await supabase.auth.signUp({
+
+    // Step 1 — Create auth account
+    const { data: authData, error } = await supabase.auth.signUp({
       email,
       password,
       options: { data: { full_name: fullName } },
     });
 
-    if (error) setErrorMsg(error.message);
-    else {
-      setSuccessMsg("Check your email to confirm your account!");
-      setTimeout(() => router.push("/login"), 3000);
+    if (error) {
+      setErrorMsg(error.message);
+      setLoading(false);
+      return;
     }
+
+    // Step 2 — Save name + email to user_profiles immediately
+    if (authData.user) {
+      await supabase.from("user_profiles").upsert({
+        id: authData.user.id,
+        name: fullName,
+        email: email,
+        created_at: new Date().toISOString(),
+      });
+    }
+
+    setSuccessMsg("Check your email to confirm your account!");
+    setTimeout(() => router.push("/login"), 3000);
     setLoading(false);
   };
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-[var(--color-bg-main)] text-[var(--color-text-body)] px-4 sm:px-6 py-8 transition-colors duration-300">
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.6 }}
-    className="w-full max-w-md bg-[var(--color-bg-card)]/95 backdrop-blur-md border border-[var(--color-border)] rounded-2xl p-6 sm:p-8 shadow-xl mx-4"
-  >
-    <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-center text-[var(--color-text-header)] break-words leading-tight whitespace-normal">
-      Create Your MyMood Account
-    </h1>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="w-full max-w-md bg-[var(--color-bg-card)]/95 backdrop-blur-md border border-[var(--color-border)] rounded-2xl p-6 sm:p-8 shadow-xl mx-4"
+      >
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-center text-[var(--color-text-header)] break-words leading-tight whitespace-normal">
+          Create Your MyMood Account
+        </h1>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           {["fullName", "email", "password", "confirmPassword"].map((field, i) => {
