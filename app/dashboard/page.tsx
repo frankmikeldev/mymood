@@ -61,10 +61,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const checkUser = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
+      const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         const name =
           session.user.user_metadata?.name ||
@@ -73,12 +70,9 @@ export default function DashboardPage() {
           "User";
         setUserName(name);
       } else {
-        setTimeout(() => {
-          router.push("/login");
-        }, 400);
+        setTimeout(() => router.push("/login"), 400);
       }
     };
-
     checkUser();
   }, [router, supabase]);
 
@@ -100,11 +94,20 @@ export default function DashboardPage() {
     { icon: Settings, label: "Settings", id: "settings" },
   ];
 
+  const tooltipStyle = {
+    contentStyle: {
+      backgroundColor: "var(--color-bg-card)",
+      border: "1px solid var(--color-border)",
+      borderRadius: "10px",
+      color: "var(--color-text-body)",
+    },
+  };
+
   return (
     <div className="min-h-screen flex bg-[var(--color-bg-main)] transition-colors">
 
       {/* ==== MOBILE HEADER ==== */}
-      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-[var(--color-bg-card)] border-b border-[var(--color-border)] flex items-center justify-between px-4 py-3 shadow-md">
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-[var(--color-bg-card)] border-b border-[var(--color-border)] flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-3">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -116,63 +119,68 @@ export default function DashboardPage() {
               <Menu size={22} className="text-[var(--color-text-header)]" />
             )}
           </button>
-          <h1 className="font-bold text-lg text-[var(--color-text-header)]">
-            MyMood
-          </h1>
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 bg-[var(--color-bg-main)] border border-[var(--color-border)] rounded-lg flex items-center justify-center">
+              <Heart size={14} className="text-[var(--color-text-header)]" />
+            </div>
+            <h1 className="font-bold text-lg text-[var(--color-text-header)]">MyMood</h1>
+          </div>
         </div>
         <button
           onClick={toggleTheme}
-          className="p-2 rounded-lg border border-[var(--color-border)] hover:bg-[var(--color-bg-badge)]"
+          className="p-2 rounded-lg border border-[var(--color-border)] hover:bg-[var(--color-bg-badge)] text-sm"
         >
           {theme === "light" ? "🌙" : "☀️"}
         </button>
       </header>
 
       {/* ==== SIDEBAR ==== */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 z-30 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       <aside
-        className={`fixed top-0 left-0 h-full w-64 bg-[var(--color-bg-card)] border-r border-[var(--color-border)] shadow-lg z-40 flex flex-col justify-between transform transition-transform duration-300 ${
+        className={`fixed top-0 left-0 h-full w-64 bg-[var(--color-bg-card)] border-r border-[var(--color-border)] z-40 flex flex-col transform transition-transform duration-300 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         } lg:translate-x-0`}
       >
-        <div className="flex flex-col h-full overflow-y-auto scrollbar-thin">
+        <div className="flex flex-col h-full overflow-y-auto">
 
           {/* Logo */}
-          <div className="p-6 flex items-center gap-3 shrink-0">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center">
-              <Heart className="text-white" size={20} />
+          <div className="p-6 flex items-center gap-3 shrink-0 border-b border-[var(--color-border)]">
+            <div className="w-9 h-9 bg-[var(--color-bg-main)] border border-[var(--color-border)] rounded-xl flex items-center justify-center">
+              <Heart size={16} className="text-[var(--color-text-header)]" />
             </div>
             <div>
-              <h1 className="font-bold text-xl text-[var(--color-text-header)]">
-                MyMood
-              </h1>
-              <p className="text-xs text-[var(--color-text-body)] opacity-70">
-                Mental Wellness
-              </p>
+              <h1 className="font-bold text-lg text-[var(--color-text-header)]">MyMood</h1>
+              <p className="text-xs text-[var(--color-text-body)] opacity-50">Mental Wellness</p>
             </div>
           </div>
 
           {/* Nav Links */}
-          <nav className="flex-1 px-4 space-y-2 pb-6">
+          <nav className="flex-1 px-3 py-4 space-y-0.5">
             {navLinks.map((item) => {
               const Icon = item.icon;
+              const active = activeTab === item.id;
               return (
                 <button
                   key={item.id}
                   onClick={() => {
                     setActiveTab(item.id);
-                    router.push(
-                      `/dashboard/${item.id === "dashboard" ? "" : item.id}`
-                    );
+                    router.push(`/dashboard/${item.id === "dashboard" ? "" : item.id}`);
                     setSidebarOpen(false);
                   }}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition ${
-                    activeTab === item.id
-                      ? "bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg"
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-sm ${
+                    active
+                      ? "bg-[var(--color-text-header)] text-[var(--color-bg-main)] font-medium"
                       : "text-[var(--color-text-body)] hover:bg-[var(--color-bg-badge)]"
                   }`}
                 >
-                  <Icon size={20} />
-                  <span className="font-medium">{item.label}</span>
+                  <Icon size={17} />
+                  <span>{item.label}</span>
                 </button>
               );
             })}
@@ -180,49 +188,41 @@ export default function DashboardPage() {
         </div>
 
         {/* ==== USER DROPDOWN ==== */}
-        <div className="relative p-6 border-t border-[var(--color-border)]">
+        <div className="relative p-4 border-t border-[var(--color-border)]">
           <button
             onClick={() => setProfileOpen(!profileOpen)}
-            className="w-full flex items-center justify-between px-4 py-2 bg-[var(--color-bg-badge)] rounded-lg hover:opacity-90 transition"
+            className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[var(--color-bg-badge)] transition"
           >
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-pink-400 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
+              <div className="w-8 h-8 bg-[var(--color-bg-main)] border border-[var(--color-border)] rounded-full flex items-center justify-center text-[var(--color-text-header)] font-bold text-sm">
                 {userName.charAt(0).toUpperCase()}
               </div>
               <div className="text-left">
-                <p className="font-semibold text-[var(--color-text-header)] text-sm">
-                  {userName}
-                </p>
-                <p className="text-xs text-[var(--color-text-body)] opacity-70">
-                  Premium Member
-                </p>
+                <p className="font-medium text-[var(--color-text-header)] text-sm">{userName}</p>
+                <p className="text-xs text-[var(--color-text-body)] opacity-50">Free Member</p>
               </div>
             </div>
             <ChevronDown
-              className={`w-4 h-4 text-[var(--color-text-body)] transition-transform ${
-                profileOpen ? "rotate-180" : ""
-              }`}
+              size={14}
+              className={`text-[var(--color-text-body)] opacity-50 transition-transform ${profileOpen ? "rotate-180" : ""}`}
             />
           </button>
 
           {profileOpen && (
-            <div className="mt-2 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-lg shadow-lg">
+            <div className="mt-1 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl overflow-hidden">
               <button
-                onClick={() => {
-                  router.push("/dashboard/settings");
-                  setProfileOpen(false);
-                }}
-                className="w-full flex items-center gap-2 text-[var(--color-text-body)] hover:bg-[var(--color-bg-badge)] px-4 py-2 rounded-t-lg transition"
+                onClick={() => { router.push("/dashboard/settings"); setProfileOpen(false); }}
+                className="w-full flex items-center gap-2 text-[var(--color-text-body)] hover:bg-[var(--color-bg-badge)] px-4 py-2.5 transition text-sm"
               >
-                <Settings size={16} />
-                <span className="text-sm font-medium">Settings</span>
+                <Settings size={14} />
+                <span>Settings</span>
               </button>
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center gap-2 text-red-500 hover:bg-red-50 px-4 py-2 rounded-b-lg transition"
+                className="w-full flex items-center gap-2 text-red-500 hover:bg-red-50/5 px-4 py-2.5 transition text-sm border-t border-[var(--color-border)]"
               >
-                <LogOut size={18} />
-                <span className="text-sm font-medium">Logout</span>
+                <LogOut size={14} />
+                <span>Sign out</span>
               </button>
             </div>
           )}
@@ -230,200 +230,173 @@ export default function DashboardPage() {
       </aside>
 
       {/* ==== MAIN CONTENT ==== */}
-      <main className="flex-1 lg:ml-64 px-6 pb-6 pt-20 lg:pt-6 transition-colors">
+      <main className="flex-1 lg:ml-64 px-6 pb-10 pt-20 lg:pt-8 transition-colors">
 
         {/* Header */}
         <header className="flex justify-between items-center mb-8">
           <div>
-            <h2 className="text-3xl font-bold text-[var(--color-text-header)] mb-1">
-              Good Morning, {userName}
+            <h2 className="text-2xl font-bold text-[var(--color-text-header)]">
+              Good morning, {userName}
             </h2>
-            <p className="text-[var(--color-text-body)] opacity-80">
+            <p className="text-[var(--color-text-body)] opacity-60 text-sm mt-0.5">
               How are you feeling today?
             </p>
           </div>
-
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <button
               onClick={toggleTheme}
-              className="hidden lg:flex p-2 rounded-lg border border-[var(--color-border)] hover:bg-[var(--color-bg-badge)] transition"
+              className="hidden lg:flex p-2.5 rounded-xl border border-[var(--color-border)] hover:bg-[var(--color-bg-badge)] transition text-sm"
             >
               {theme === "light" ? "🌙" : "☀️"}
             </button>
-            <button className="relative p-3 bg-[var(--color-bg-card)] rounded-xl border border-[var(--color-border)] hover:bg-[var(--color-bg-badge)] transition">
-              <Bell size={20} className="text-[var(--color-text-header)]" />
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-white text-xs flex items-center justify-center">
+            <button className="relative p-2.5 bg-[var(--color-bg-card)] rounded-xl border border-[var(--color-border)] hover:bg-[var(--color-bg-badge)] transition">
+              <Bell size={18} className="text-[var(--color-text-header)]" />
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-white text-xs flex items-center justify-center">
                 3
               </span>
             </button>
           </div>
         </header>
 
-        {/* === Mood Overview === */}
-        <section className="p-6 md:p-10 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl">
-          <h2 className="text-2xl font-bold text-[var(--color-text-header)] mb-8 text-center">
-            Mood Overview
-          </h2>
-
-          {/* Stats Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
-            <div className="bg-[var(--color-bg-main)] border border-[var(--color-border)] rounded-xl p-5 text-center shadow-sm">
-              <h4 className="text-sm text-[var(--color-text-body)] mb-1">Today's Mood</h4>
-              <div className="text-4xl mb-2">😊</div>
-              <p className="font-semibold text-[var(--color-text-header)]">Happy</p>
-            </div>
-            <div className="bg-[var(--color-bg-main)] border border-[var(--color-border)] rounded-xl p-5 text-center shadow-sm">
-              <h4 className="text-sm text-[var(--color-text-body)] mb-1">Average Anxiety</h4>
-              <p className="text-3xl font-bold text-[var(--color-accent)]">3.2</p>
-            </div>
-            <div className="bg-[var(--color-bg-main)] border border-[var(--color-border)] rounded-xl p-5 text-center shadow-sm">
-              <h4 className="text-sm text-[var(--color-text-body)] mb-1">Last 30 Check-ins</h4>
-              <p className="text-3xl font-bold text-[var(--color-text-header)]">26</p>
-            </div>
-            <div className="bg-[var(--color-bg-main)] border border-[var(--color-border)] rounded-xl p-5 text-center shadow-sm">
-              <h4 className="text-sm text-[var(--color-text-body)] mb-1">Mood Streak</h4>
-              <p className="text-3xl font-bold text-[var(--color-accent)]">5 🔥</p>
-              <p className="text-xs text-[var(--color-text-body)] opacity-70">Consecutive days logged</p>
-            </div>
-          </div>
-
-          {/* Weekly Progress Chart */}
-          <div className="mb-12">
-            <h3 className="text-xl font-semibold text-[var(--color-text-header)] mb-4 text-center">
-              Weekly Progress 📈
-            </h3>
-            <div className="w-full flex flex-col items-center">
-              <div className="w-full max-w-3xl">
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart
-                    data={[
-                      { day: "Mon", mood: 4 },
-                      { day: "Tue", mood: 3 },
-                      { day: "Wed", mood: 5 },
-                      { day: "Thu", mood: 2 },
-                      { day: "Fri", mood: 4 },
-                      { day: "Sat", mood: 5 },
-                      { day: "Sun", mood: 3 },
-                    ]}
-                    margin={{ top: 20, right: 30, left: 0, bottom: 10 }}
-                  >
-                    <defs>
-                      <linearGradient id="colorMood" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#a855f7" stopOpacity={0.9} />
-                        <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.2} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" opacity={0.4} />
-                    <XAxis dataKey="day" tick={{ fill: "var(--color-text-body)" }} axisLine={false} />
-                    <YAxis domain={[0, 5]} ticks={[1, 2, 3, 4, 5]} tick={{ fill: "var(--color-text-body)" }} axisLine={false} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "var(--color-bg-card)",
-                        border: "1px solid var(--color-border)",
-                        borderRadius: "10px",
-                        color: "var(--color-text-body)",
-                      }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="mood"
-                      stroke="url(#colorMood)"
-                      strokeWidth={3}
-                      dot={{ r: 5, fill: "var(--color-accent)" }}
-                      activeDot={{ r: 7 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-              <p className="text-sm text-[var(--color-text-body)] mt-6 opacity-80">
-                Track how your mood evolves through the week
+        {/* === Stat Cards === */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          {[
+            { label: "Today's Mood", value: "😊", sub: "Happy", isEmoji: true },
+            { label: "Avg Score", value: "3.2", sub: "out of 5", isEmoji: false },
+            { label: "Check-ins", value: "26", sub: "Last 30 days", isEmoji: false },
+            { label: "Streak", value: "5🔥", sub: "Consecutive days", isEmoji: false },
+          ].map((card) => (
+            <div
+              key={card.label}
+              className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl p-5 text-center"
+            >
+              <p className="text-xs text-[var(--color-text-body)] opacity-60 mb-2">{card.label}</p>
+              <p className={`font-bold text-[var(--color-text-header)] ${card.isEmoji ? "text-3xl mb-1" : "text-2xl"}`}>
+                {card.value}
               </p>
+              <p className="text-xs text-[var(--color-text-body)] opacity-50">{card.sub}</p>
             </div>
+          ))}
+        </div>
+
+        {/* === Charts === */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+
+          {/* Line Chart */}
+          <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl p-6">
+            <h3 className="text-sm font-semibold text-[var(--color-text-header)] mb-1">
+              Weekly Progress
+            </h3>
+            <p className="text-xs text-[var(--color-text-body)] opacity-50 mb-5">
+              Your mood trend this week
+            </p>
+            <ResponsiveContainer width="100%" height={220}>
+              <LineChart
+                data={[
+                  { day: "Mon", mood: 4 },
+                  { day: "Tue", mood: 3 },
+                  { day: "Wed", mood: 5 },
+                  { day: "Thu", mood: 2 },
+                  { day: "Fri", mood: 4 },
+                  { day: "Sat", mood: 5 },
+                  { day: "Sun", mood: 3 },
+                ]}
+                margin={{ top: 5, right: 10, left: -20, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" opacity={0.4} />
+                <XAxis dataKey="day" tick={{ fill: "var(--color-text-body)", fontSize: 11 }} axisLine={false} />
+                <YAxis domain={[0, 5]} ticks={[1, 2, 3, 4, 5]} tick={{ fill: "var(--color-text-body)", fontSize: 11 }} axisLine={false} />
+                <Tooltip {...tooltipStyle} />
+                <Line
+                  type="monotone"
+                  dataKey="mood"
+                  stroke="var(--color-text-header)"
+                  strokeWidth={2.5}
+                  dot={{ r: 4, fill: "var(--color-text-header)", strokeWidth: 0 }}
+                  activeDot={{ r: 6 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
 
-          {/* Mood Distribution Donut Chart */}
-          <div className="flex flex-col items-center mb-12">
-            <h3 className="text-xl font-semibold text-[var(--color-text-header)] mb-4 text-center">
+          {/* Pie Chart */}
+          <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl p-6">
+            <h3 className="text-sm font-semibold text-[var(--color-text-header)] mb-1">
               Mood Distribution
             </h3>
-            <div className="w-full max-w-md">
-              <ResponsiveContainer width="100%" height={250}>
-                <PieChart>
-                  <Pie
-                    data={[
-                      { name: "Happy", value: 45 },
-                      { name: "Calm", value: 25 },
-                      { name: "Anxious", value: 20 },
-                      { name: "Sad", value: 10 },
-                    ]}
-                    innerRadius={60}
-                    outerRadius={90}
-                    paddingAngle={4}
-                    dataKey="value"
-                  >
-                    <Cell fill="#10b981" />
-                    <Cell fill="#3b82f6" />
-                    <Cell fill="#f59e0b" />
-                    <Cell fill="#ef4444" />
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "var(--color-bg-card)",
-                      border: "1px solid var(--color-border)",
-                      borderRadius: "10px",
-                      color: "var(--color-text-body)",
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* Legend */}
-            <div className="flex flex-wrap justify-center gap-4 mt-2">
+            <p className="text-xs text-[var(--color-text-body)] opacity-50 mb-5">
+              Breakdown of your moods
+            </p>
+            <ResponsiveContainer width="100%" height={160}>
+              <PieChart>
+                <Pie
+                  data={[
+                    { name: "Happy", value: 45 },
+                    { name: "Calm", value: 25 },
+                    { name: "Anxious", value: 20 },
+                    { name: "Sad", value: 10 },
+                  ]}
+                  innerRadius={45}
+                  outerRadius={70}
+                  paddingAngle={4}
+                  dataKey="value"
+                >
+                  <Cell fill="#10b981" />
+                  <Cell fill="#3b82f6" />
+                  <Cell fill="#f59e0b" />
+                  <Cell fill="#ef4444" />
+                </Pie>
+                <Tooltip {...tooltipStyle} />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="flex flex-wrap justify-center gap-3 mt-2">
               {[
                 { label: "Happy", color: "#10b981" },
                 { label: "Calm", color: "#3b82f6" },
                 { label: "Anxious", color: "#f59e0b" },
                 { label: "Sad", color: "#ef4444" },
               ].map((item) => (
-                <div key={item.label} className="flex items-center gap-2 text-sm text-[var(--color-text-body)]">
-                  <span className="w-3 h-3 rounded-full" style={{ background: item.color }} />
+                <div key={item.label} className="flex items-center gap-1.5 text-xs text-[var(--color-text-body)] opacity-70">
+                  <span className="w-2.5 h-2.5 rounded-full" style={{ background: item.color }} />
                   {item.label}
                 </div>
               ))}
             </div>
           </div>
+        </div>
 
-          {/* Quick Nav Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 mb-10">
+        {/* === Quick Nav === */}
+        <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl p-6 mb-6">
+          <h3 className="text-sm font-semibold text-[var(--color-text-header)] mb-4">Quick access</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
             {[
-              { icon: BookOpen, label: "Journal", id: "journal", color: "from-blue-500 to-cyan-500" },
-              { icon: Bot, label: "AI Chat", id: "chatbot", color: "from-purple-500 to-pink-500" },
-              { icon: TrendingUp, label: "Insights", id: "insights", color: "from-green-500 to-emerald-500" },
-              { icon: Activity, label: "Tracker", id: "tracker", color: "from-orange-500 to-red-500" },
-              { icon: Apple, label: "Diet Plan", id: "diet", color: "from-yellow-500 to-orange-500" },
+              { icon: BookOpen, label: "Journal", id: "journal" },
+              { icon: Bot, label: "AI Chat", id: "chatbot" },
+              { icon: TrendingUp, label: "Insights", id: "insights" },
+              { icon: Activity, label: "Tracker", id: "tracker" },
+              { icon: Apple, label: "Diet Plan", id: "diet" },
             ].map((item) => {
               const Icon = item.icon;
               return (
                 <button
                   key={item.id}
                   onClick={() => router.push(`/dashboard/${item.id}`)}
-                  className={`flex flex-col items-center gap-2 p-4 rounded-xl bg-gradient-to-br ${item.color} text-white shadow-md hover:opacity-90 transition`}
+                  className="flex flex-col items-center gap-2 p-4 rounded-xl border border-[var(--color-border)] hover:bg-[var(--color-bg-badge)] hover:border-[var(--color-text-header)] transition text-[var(--color-text-body)]"
                 >
-                  <Icon size={22} />
-                  <span className="text-xs font-semibold">{item.label}</span>
+                  <Icon size={20} />
+                  <span className="text-xs font-medium">{item.label}</span>
                 </button>
               );
             })}
           </div>
+        </div>
 
-          {/* Tip of the Day */}
-          <div className="text-center border-t border-[var(--color-border)] pt-6">
-            <p className="text-[var(--color-text-body)] italic text-sm max-w-lg mx-auto">
-              💡 Focus on progress, not perfection. Even small steps count.
-            </p>
-          </div>
-        </section>
+        {/* === Tip of the Day === */}
+        <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl px-6 py-4 text-center">
+          <p className="text-[var(--color-text-body)] opacity-60 text-sm italic">
+            💡 Focus on progress, not perfection. Even small steps count.
+          </p>
+        </div>
 
       </main>
     </div>

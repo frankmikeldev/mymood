@@ -2,6 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useState } from "react";
+import { Lightbulb } from "lucide-react";
 
 type MoodContent = {
   story: string;
@@ -422,39 +423,46 @@ export default function MoodTipsPage() {
 
   if (!content) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-[var(--color-text-muted)]">
-        No content found for "{decodedMood}".
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-[var(--color-text-body)] opacity-50 text-sm">
+          No content found for "{decodedMood}".
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg)] p-6 md:p-10">
-      <div className="max-w-4xl mx-auto space-y-10">
+    <div className="min-h-screen bg-[var(--color-bg-main)] p-6 md:p-10">
+      <div className="max-w-3xl mx-auto space-y-6">
 
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-[var(--color-text-primary)]">
-            {decodedMood} Support Guide
-          </h1>
-          <p className="text-[var(--color-text-muted)] mt-2">
-            Personalized support, practical steps & gentle guidance.
-          </p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-[var(--color-text-header)]">
+              {decodedMood} Support Guide
+            </h1>
+            <p className="text-[var(--color-text-body)] opacity-50 text-sm mt-1">
+              Personalized support, practical steps and gentle guidance.
+            </p>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-[var(--color-bg-card)] border border-[var(--color-border)] flex items-center justify-center shrink-0">
+            <Lightbulb size={18} className="text-[var(--color-text-header)]" />
+          </div>
         </div>
 
-        {/* Relatable Story */}
-        <div className="p-6 bg-[var(--color-box)] border border-[var(--color-border)] rounded-2xl">
-          <h2 className="text-xl font-semibold text-[var(--color-accent)] mb-3">
+        {/* Story */}
+        <div className="p-6 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl">
+          <h2 className="text-xs font-semibold text-[var(--color-text-body)] opacity-40 uppercase tracking-widest mb-4">
             A Short Story
           </h2>
           {!storyExpanded ? (
             <>
-              <p className="text-sm text-[var(--color-text-muted)] leading-relaxed">
+              <p className="text-sm text-[var(--color-text-body)] opacity-70 leading-relaxed">
                 {content.story}
               </p>
               <button
                 onClick={() => setStoryExpanded(true)}
-                className="mt-4 text-sm font-medium text-[var(--color-accent)] hover:underline"
+                className="mt-4 text-xs font-medium text-[var(--color-text-header)] opacity-50 hover:opacity-100 transition"
               >
                 Read full story →
               </button>
@@ -462,13 +470,13 @@ export default function MoodTipsPage() {
           ) : (
             <>
               {content.storyFull.split("\n\n").map((paragraph, i) => (
-                <p key={i} className="text-sm text-[var(--color-text-muted)] leading-relaxed mb-4">
+                <p key={i} className="text-sm text-[var(--color-text-body)] opacity-70 leading-relaxed mb-4">
                   {paragraph}
                 </p>
               ))}
               <button
                 onClick={() => setStoryExpanded(false)}
-                className="mt-2 text-sm font-medium text-[var(--color-accent)] hover:underline"
+                className="mt-2 text-xs font-medium text-[var(--color-text-header)] opacity-50 hover:opacity-100 transition"
               >
                 ← Show less
               </button>
@@ -477,18 +485,18 @@ export default function MoodTipsPage() {
         </div>
 
         {/* Why It Helps */}
-        <div className="p-6 bg-[var(--color-box)] border border-[var(--color-border)] rounded-2xl">
-          <h2 className="text-xl font-semibold text-[var(--color-accent)] mb-3">
+        <div className="p-6 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl">
+          <h2 className="text-xs font-semibold text-[var(--color-text-body)] opacity-40 uppercase tracking-widest mb-4">
             Why This Helps
           </h2>
           {!whyExpanded ? (
             <>
-              <p className="text-sm text-[var(--color-text-muted)] leading-relaxed">
+              <p className="text-sm text-[var(--color-text-body)] opacity-70 leading-relaxed">
                 {content.whyItHelps}
               </p>
               <button
                 onClick={() => setWhyExpanded(true)}
-                className="mt-4 text-sm font-medium text-[var(--color-accent)] hover:underline"
+                className="mt-4 text-xs font-medium text-[var(--color-text-header)] opacity-50 hover:opacity-100 transition"
               >
                 Read more →
               </button>
@@ -496,13 +504,13 @@ export default function MoodTipsPage() {
           ) : (
             <>
               {content.whyItHelpsFull.split("\n\n").map((paragraph, i) => (
-                <p key={i} className="text-sm text-[var(--color-text-muted)] leading-relaxed mb-4">
+                <p key={i} className="text-sm text-[var(--color-text-body)] opacity-70 leading-relaxed mb-4">
                   {paragraph}
                 </p>
               ))}
               <button
                 onClick={() => setWhyExpanded(false)}
-                className="mt-2 text-sm font-medium text-[var(--color-accent)] hover:underline"
+                className="mt-2 text-xs font-medium text-[var(--color-text-header)] opacity-50 hover:opacity-100 transition"
               >
                 ← Show less
               </button>
@@ -510,30 +518,41 @@ export default function MoodTipsPage() {
           )}
         </div>
 
-        {/* Tips Section */}
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold text-[var(--color-text-primary)]">
+        {/* Tips */}
+        <div>
+          <h2 className="text-xs font-semibold text-[var(--color-text-body)] opacity-40 uppercase tracking-widest mb-4">
             Practical Tips
           </h2>
-          {content.tips.map((tip, index) => (
-            <div
-              key={index}
-              className="p-5 bg-[var(--color-box)] border border-[var(--color-border)] rounded-xl"
-            >
-              <h3 className="font-semibold text-[var(--color-accent)]">{tip.title}</h3>
-              <p className="text-sm text-[var(--color-text-muted)] mt-2">{tip.description}</p>
-            </div>
-          ))}
+          <div className="space-y-3">
+            {content.tips.map((tip, index) => (
+              <div
+                key={index}
+                className="p-5 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl"
+              >
+                <h3 className="text-sm font-semibold text-[var(--color-text-header)] mb-2">
+                  {tip.title}
+                </h3>
+                <p className="text-sm text-[var(--color-text-body)] opacity-60 leading-relaxed">
+                  {tip.description}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Recommended Plan */}
-        <div className="p-6 bg-[var(--color-box)] border border-[var(--color-border)] rounded-2xl">
-          <h2 className="text-xl font-semibold text-[var(--color-accent)] mb-3">
+        {/* Action Plan */}
+        <div className="p-6 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl">
+          <h2 className="text-xs font-semibold text-[var(--color-text-body)] opacity-40 uppercase tracking-widest mb-4">
             Recommended Action Plan
           </h2>
-          <ul className="text-sm text-[var(--color-text-muted)] space-y-2">
+          <ul className="space-y-3">
             {content.actionPlan.map((step, index) => (
-              <li key={index}>• {step}</li>
+              <li key={index} className="flex items-start gap-3 text-sm text-[var(--color-text-body)] opacity-70">
+                <span className="w-5 h-5 rounded-full bg-[var(--color-bg-main)] border border-[var(--color-border)] flex items-center justify-center text-xs text-[var(--color-text-header)] shrink-0 mt-0.5 font-medium">
+                  {index + 1}
+                </span>
+                {step}
+              </li>
             ))}
           </ul>
         </div>
