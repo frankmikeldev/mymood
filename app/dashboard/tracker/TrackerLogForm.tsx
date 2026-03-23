@@ -30,13 +30,11 @@ export default function TrackerLogForm({
   };
 
   return (
-    <div className="bg-[var(--color-box)] border border-[var(--color-border)] rounded-2xl p-6 shadow-sm">
-      <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-1">
+    <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl p-6">
+
+      <h3 className="text-xs font-semibold text-[var(--color-text-body)] opacity-40 uppercase tracking-widest mb-5">
         How are you feeling today?
       </h3>
-      <p className="text-sm text-[var(--color-text-muted)] mb-6">
-        Select your mood and add an optional note.
-      </p>
 
       <form onSubmit={handleSubmit} className="space-y-5">
 
@@ -49,8 +47,8 @@ export default function TrackerLogForm({
               onClick={() => setMood(m.value)}
               className={`flex flex-col items-center gap-1.5 py-3 px-1 rounded-xl border transition ${
                 mood === m.value
-                  ? "border-[var(--color-accent)] bg-[var(--color-accent)]/10 text-[var(--color-accent)]"
-                  : "border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text-muted)] hover:border-[var(--color-accent)]/50"
+                  ? "bg-[var(--color-text-header)] border-[var(--color-text-header)] text-[var(--color-bg-main)]"
+                  : "border-[var(--color-border)] bg-[var(--color-bg-main)] text-[var(--color-text-body)] opacity-60 hover:opacity-100 hover:border-[var(--color-text-header)]"
               }`}
             >
               <span className="text-2xl">{m.emoji}</span>
@@ -62,13 +60,15 @@ export default function TrackerLogForm({
         {/* Mood score bar */}
         {mood && (
           <div className="flex items-center gap-3">
-            <div className="flex-1 h-2 bg-[var(--color-border)] rounded-full overflow-hidden">
+            <div className="flex-1 h-1.5 bg-[var(--color-border)] rounded-full overflow-hidden">
               <div
-                className="h-2 rounded-full bg-[var(--color-accent)] transition-all duration-500"
+                className="h-1.5 rounded-full bg-[var(--color-text-header)] transition-all duration-500"
                 style={{ width: `${(mood / 5) * 100}%` }}
               />
             </div>
-            <span className="text-xs text-[var(--color-text-muted)] shrink-0">{mood}/5</span>
+            <span className="text-xs text-[var(--color-text-body)] opacity-40 shrink-0">
+              {mood}/5
+            </span>
           </div>
         )}
 
@@ -78,16 +78,17 @@ export default function TrackerLogForm({
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Add a note about how you're feeling... (optional)"
           rows={3}
-          className="w-full p-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] outline-none focus:border-[var(--color-accent)] resize-none transition"
+          className="w-full px-4 py-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-main)] text-sm text-[var(--color-text-header)] placeholder:text-[var(--color-text-body)] placeholder:opacity-30 outline-none focus:border-[var(--color-text-header)] focus:border-opacity-30 resize-none transition"
         />
 
         <button
           type="submit"
           disabled={!mood}
-          className="w-full py-3 rounded-xl bg-[var(--color-accent)] text-white font-semibold hover:opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed"
+          className="w-full py-3 rounded-xl bg-[var(--color-text-header)] text-[var(--color-bg-main)] font-semibold text-sm hover:opacity-90 transition disabled:opacity-30 disabled:cursor-not-allowed"
         >
           {submitted ? "✓ Mood Logged!" : "Log Mood"}
         </button>
+
       </form>
     </div>
   );

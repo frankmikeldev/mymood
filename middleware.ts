@@ -35,13 +35,17 @@ export async function middleware(request: NextRequest) {
   }
 
   // ✅ Protect /admin — must be logged in
-  // (role check happens inside layout.tsx)
   if (pathname.startsWith("/admin") && pathname !== "/admin/login" && !user) {
     return NextResponse.redirect(new URL("/admin/login", request.url));
   }
 
-  // ✅ Redirect logged-in users away from /login and /signup
-  if ((pathname === "/login" || pathname === "/signup") && user) {
+  // ✅ Redirect logged-in users away from auth pages
+  if (
+    (pathname === "/login" ||
+      pathname === "/signup" ||
+      pathname === "/forgot-password") &&
+    user
+  ) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
@@ -59,5 +63,6 @@ export const config = {
     "/admin/:path*",
     "/login",
     "/signup",
+    "/forgot-password",
   ],
 };

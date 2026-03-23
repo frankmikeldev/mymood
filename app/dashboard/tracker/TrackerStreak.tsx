@@ -23,40 +23,40 @@ export default function TrackerStreak({ entries }: { entries: any[] }) {
   });
 
   const streakMessage =
-    streak >= 7 ? "You're on fire! 🔥 Keep it up!" :
-    streak >= 3 ? "Great consistency! Keep going 💪" :
-    "Every day counts. Keep logging! 🌱";
+    streak >= 7 ? "You're on a roll. Keep going!" :
+    streak >= 3 ? "Great consistency. Keep logging!" :
+    "Every day counts. Keep going.";
 
   return (
-    <div className="bg-[var(--color-box)] border border-[var(--color-border)] rounded-2xl p-6 shadow-sm">
-      <div className="flex items-center justify-between mb-4">
+    <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl p-6">
+      <div className="flex items-center justify-between mb-5">
         <div>
-          <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">Your Progress</h3>
-          <p className="text-sm text-[var(--color-text-muted)] mt-0.5">{streakMessage}</p>
+          <h3 className="text-xs font-semibold text-[var(--color-text-body)] opacity-40 uppercase tracking-widest">
+            Your Progress
+          </h3>
+          <p className="text-sm text-[var(--color-text-body)] opacity-60 mt-1">{streakMessage}</p>
         </div>
-        <div className="w-12 h-12 rounded-full bg-[var(--color-accent)]/10 flex items-center justify-center text-2xl">
-          🔥
-        </div>
+        <span className="text-2xl">🔥</span>
       </div>
 
       <div className="grid grid-cols-3 gap-3">
         {[
           { label: "Day Streak", value: `${streak}🔥`, sub: "consecutive days" },
-          { label: "Total Logs", value: totalEntries, sub: "all time entries" },
+          { label: "Total Logs", value: totalEntries, sub: "all time" },
           { label: "Avg Mood", value: `${avgMood}/5`, sub: "last 30 entries" },
         ].map((stat) => (
           <div
             key={stat.label}
-            className="bg-[var(--color-bg)] border border-[var(--color-border)] rounded-xl p-3 text-center"
+            className="bg-[var(--color-bg-main)] border border-[var(--color-border)] rounded-xl p-3 text-center"
           >
-            <p className="text-xl font-bold text-[var(--color-accent)]">{stat.value}</p>
-            <p className="text-xs font-medium text-[var(--color-text-primary)] mt-1">{stat.label}</p>
-            <p className="text-xs text-[var(--color-text-muted)]">{stat.sub}</p>
+            <p className="text-xl font-bold text-[var(--color-text-header)]">{stat.value}</p>
+            <p className="text-xs font-medium text-[var(--color-text-body)] opacity-60 mt-1">{stat.label}</p>
+            <p className="text-xs text-[var(--color-text-body)] opacity-30">{stat.sub}</p>
           </div>
         ))}
       </div>
 
-      <p className="text-xs text-[var(--color-text-muted)] mt-4 text-right">
+      <p className="text-xs text-[var(--color-text-body)] opacity-30 mt-4 text-right">
         Last logged: {lastLog}
       </p>
     </div>

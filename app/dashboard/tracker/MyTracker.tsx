@@ -8,6 +8,7 @@ import TrackerList from "./TrackerList";
 import TrackerChart from "./TrackerChart";
 import TrackerEmpty from "./TrackerEmpty";
 import TrackerStreak from "./TrackerStreak";
+import { Activity } from "lucide-react";
 
 export default function MyTracker() {
   const router = useRouter();
@@ -20,7 +21,6 @@ export default function MyTracker() {
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { router.push("/login"); return; }
-
       setUser(session.user);
       try {
         const { getRecentCheckins } = await import("@/lib/supabase/checkins");
@@ -37,7 +37,6 @@ export default function MyTracker() {
 
   const onCreate = async (payload: { mood: number; notes?: string; emotion?: string }) => {
     if (!user) return;
-
     const temp = {
       id: `temp-${Date.now()}`,
       user_id: user.id,
@@ -45,9 +44,7 @@ export default function MyTracker() {
       created_at: new Date().toISOString(),
       optimistic: true,
     };
-
     setCheckins((prev) => [temp, ...prev].slice(0, 30));
-
     try {
       const { createCheckin } = await import("@/lib/supabase/checkins");
       const saved = await createCheckin({ ...payload, user_id: user.id });
@@ -59,20 +56,27 @@ export default function MyTracker() {
   };
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg-main)]">
       <div className="flex flex-col items-center gap-3">
-        <div className="w-10 h-10 rounded-full border-4 border-[var(--color-accent)] border-t-transparent animate-spin" />
-        <p className="text-sm text-[var(--color-text-muted)]">Loading your tracker...</p>
+        <div className="w-8 h-8 rounded-full border-2 border-[var(--color-text-header)] border-t-transparent animate-spin opacity-40" />
+        <p className="text-sm text-[var(--color-text-body)] opacity-40">Loading your tracker...</p>
       </div>
     </div>
   );
 
   if (!checkins.length) return (
-    <div className="min-h-screen bg-[var(--color-bg)] p-6 md:p-10">
+    <div className="min-h-screen bg-[var(--color-bg-main)] p-6 md:p-10">
       <div className="max-w-2xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-[var(--color-text-primary)]">Mood Tracker</h1>
-          <p className="text-[var(--color-text-muted)] mt-2">Log your emotions and understand your patterns.</p>
+        <div className="flex items-start justify-between mb-8">
+          <div>
+            <h1 className="text-2xl font-bold text-[var(--color-text-header)]">Mood Tracker</h1>
+            <p className="text-[var(--color-text-body)] opacity-50 text-sm mt-1">
+              Log your emotions and understand your patterns.
+            </p>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-[var(--color-bg-card)] border border-[var(--color-border)] flex items-center justify-center shrink-0">
+            <Activity size={18} className="text-[var(--color-text-header)]" />
+          </div>
         </div>
         <TrackerEmpty onCreate={onCreate} />
       </div>
@@ -80,17 +84,19 @@ export default function MyTracker() {
   );
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg)] p-6 md:p-10">
-      <div className="max-w-4xl mx-auto space-y-8">
-
-        {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-[var(--color-text-primary)]">Mood Tracker</h1>
-          <p className="text-[var(--color-text-muted)] mt-2">
-            Log your emotions and understand your patterns.
-          </p>
+    <div className="min-h-screen bg-[var(--color-bg-main)] p-6 md:p-10">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-[var(--color-text-header)]">Mood Tracker</h1>
+            <p className="text-[var(--color-text-body)] opacity-50 text-sm mt-1">
+              Log your emotions and understand your patterns.
+            </p>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-[var(--color-bg-card)] border border-[var(--color-border)] flex items-center justify-center shrink-0">
+            <Activity size={18} className="text-[var(--color-text-header)]" />
+          </div>
         </div>
-
         <TrackerLogForm onCreate={onCreate} />
         <TrackerStreak entries={checkins} />
         <TrackerChart data={checkins} />

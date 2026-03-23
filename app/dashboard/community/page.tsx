@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { Heart, MessageCircle, Send, Users } from "lucide-react";
+import DOMPurify from "dompurify";
 
 const supabase = createClient();
 
@@ -16,6 +17,10 @@ const ANON_NAMES = [
 function getAnonName(userId: string) {
   const index = userId.charCodeAt(0) % ANON_NAMES.length;
   return ANON_NAMES[index];
+}
+
+function sanitize(text: string) {
+  return DOMPurify.sanitize(text, { ALLOWED_TAGS: [] });
 }
 
 export default function CommunityPage() {
@@ -76,7 +81,16 @@ export default function CommunityPage() {
   async function createPost() {
     if (!newPost.trim() || !userId) return;
     setPosting(true);
-    await supabase.from("community_posts").insert({ content: newPost, user_id: userId });
+
+    // ✅ Sanitize post content before saving
+    const cleanPost = sanitize(newPost);
+    if (!cleanPost.trim()) { setPosting(false); return; }
+
+    await supabase.from("community_posts").insert({
+      content: cleanPost,
+      user_id: userId,
+    });
+
     setNewPost("");
     setPosting(false);
   }
@@ -95,7 +109,17 @@ export default function CommunityPage() {
 
   async function submitComment(postId: string) {
     if (!newComment.trim() || !userId) return;
-    await supabase.from("community_comments").insert({ post_id: postId, user_id: userId, comment: newComment });
+
+    // ✅ Sanitize comment before saving
+    const cleanComment = sanitize(newComment);
+    if (!cleanComment.trim()) return;
+
+    await supabase.from("community_comments").insert({
+      post_id: postId,
+      user_id: userId,
+      comment: cleanComment,
+    });
+
     setNewComment("");
     fetchComments(postId);
     fetchPosts();

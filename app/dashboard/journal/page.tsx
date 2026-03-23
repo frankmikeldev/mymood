@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { Trash2, Pencil, X, Check, BookOpen } from "lucide-react";
+import DOMPurify from "dompurify";
 
 const supabase = createClient();
 
@@ -67,11 +68,17 @@ export default function JournalPage() {
   async function createEntry() {
     if (!content.trim() || !userId) return;
     setSaving(true);
+
+    // ✅ Sanitize before saving — strips all HTML tags
+    const cleanTitle = DOMPurify.sanitize(title, { ALLOWED_TAGS: [] });
+    const cleanContent = DOMPurify.sanitize(content, { ALLOWED_TAGS: [] });
+
     const { data } = await supabase
       .from("journal_entries")
-      .insert({ user_id: userId, title, content, mood })
+      .insert({ user_id: userId, title: cleanTitle, content: cleanContent, mood })
       .select()
       .single();
+
     if (data) setEntries((prev) => [data, ...prev]);
     setTitle("");
     setContent("");
@@ -95,12 +102,18 @@ export default function JournalPage() {
 
   async function saveEdit(id: string) {
     if (!editContent.trim()) return;
+
+    // ✅ Sanitize on edit too
+    const cleanTitle = DOMPurify.sanitize(editTitle, { ALLOWED_TAGS: [] });
+    const cleanContent = DOMPurify.sanitize(editContent, { ALLOWED_TAGS: [] });
+
     const { data } = await supabase
       .from("journal_entries")
-      .update({ title: editTitle, content: editContent, mood: editMood })
+      .update({ title: cleanTitle, content: cleanContent, mood: editMood })
       .eq("id", id)
       .select()
       .single();
+
     if (data) setEntries((prev) => prev.map((e) => (e.id === id ? data : e)));
     setEditingId(null);
   }

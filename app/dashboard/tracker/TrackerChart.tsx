@@ -41,50 +41,53 @@ export default function TrackerChart({ data }: { data: any[] }) {
     count,
   }));
 
+  const tooltipStyle = {
+    contentStyle: {
+      background: "var(--color-bg-card)",
+      border: "1px solid var(--color-border)",
+      borderRadius: 8,
+      color: "var(--color-text-header)",
+    },
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
 
       {/* Line Chart */}
-      <div className="bg-[var(--color-box)] border border-[var(--color-border)] rounded-2xl p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-6">
+      <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl p-6">
+        <div className="flex items-center justify-between mb-5">
           <div>
-            <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">Mood Trend</h3>
-            <p className="text-sm text-[var(--color-text-muted)] mt-0.5">Last 14 entries</p>
+            <h3 className="text-xs font-semibold text-[var(--color-text-body)] opacity-40 uppercase tracking-widest">
+              Mood Trend
+            </h3>
+            <p className="text-sm text-[var(--color-text-body)] opacity-50 mt-0.5">Last 14 entries</p>
           </div>
           {avgMood && (
             <div className="text-right">
-              <p className="text-2xl font-bold text-[var(--color-accent)]">{avgMood}<span className="text-sm font-normal text-[var(--color-text-muted)]">/5</span></p>
-              <p className="text-xs text-[var(--color-text-muted)]">avg mood</p>
+              <p className="text-2xl font-bold text-[var(--color-text-header)]">
+                {avgMood}
+                <span className="text-sm font-normal text-[var(--color-text-body)] opacity-40">/5</span>
+              </p>
+              <p className="text-xs text-[var(--color-text-body)] opacity-40">avg mood</p>
             </div>
           )}
         </div>
-
-        <ResponsiveContainer width="100%" height={240}>
+        <ResponsiveContainer width="100%" height={220}>
           <LineChart data={chartData}>
-            <defs>
-              <linearGradient id="moodGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="var(--color-accent)" stopOpacity={0.3} />
-                <stop offset="100%" stopColor="var(--color-accent)" stopOpacity={0} />
-              </linearGradient>
-            </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-            <XAxis dataKey="day" tick={{ fill: "var(--color-text-muted)", fontSize: 11 }} />
-            <YAxis domain={[1, 5]} ticks={[1, 2, 3, 4, 5]} tick={{ fill: "var(--color-text-muted)", fontSize: 11 }} />
+            <XAxis dataKey="day" tick={{ fill: "var(--color-text-body)", fontSize: 11 }} />
+            <YAxis domain={[1, 5]} ticks={[1, 2, 3, 4, 5]} tick={{ fill: "var(--color-text-body)", fontSize: 11 }} />
             <Tooltip
-              contentStyle={{
-                background: "var(--color-box)",
-                border: "1px solid var(--color-border)",
-                borderRadius: 8,
-              }}
+              {...tooltipStyle}
               formatter={(value: any) => [MOOD_LABELS[Number(value)], "Mood"]}
             />
             <Line
               type="monotone"
               dataKey="mood"
-              stroke="var(--color-accent)"
-              strokeWidth={3}
-              dot={{ r: 5, fill: "var(--color-accent)", strokeWidth: 2, stroke: "var(--color-box)" }}
-              activeDot={{ r: 7 }}
+              stroke="var(--color-text-header)"
+              strokeWidth={2.5}
+              dot={{ r: 4, fill: "var(--color-text-header)", strokeWidth: 0 }}
+              activeDot={{ r: 6 }}
             />
           </LineChart>
         </ResponsiveContainer>
@@ -92,11 +95,12 @@ export default function TrackerChart({ data }: { data: any[] }) {
 
       {/* Breakdown */}
       {moodBreakdown.length > 0 && (
-        <div className="bg-[var(--color-box)] border border-[var(--color-border)] rounded-2xl p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-6">Mood Breakdown</h3>
-
+        <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl p-6">
+          <h3 className="text-xs font-semibold text-[var(--color-text-body)] opacity-40 uppercase tracking-widest mb-5">
+            Mood Breakdown
+          </h3>
           <div className="flex flex-col sm:flex-row items-center gap-6">
-            <ResponsiveContainer width="100%" height={180}>
+            <ResponsiveContainer width="100%" height={160}>
               <PieChart>
                 <Pie
                   data={moodBreakdown}
@@ -104,31 +108,23 @@ export default function TrackerChart({ data }: { data: any[] }) {
                   nameKey="label"
                   cx="50%"
                   cy="50%"
-                  innerRadius={50}
-                  outerRadius={80}
+                  innerRadius={40}
+                  outerRadius={70}
                   paddingAngle={4}
                 >
                   {moodBreakdown.map((entry) => (
-                    <Cell key={entry.mood} fill={MOOD_COLORS[entry.mood] || "var(--color-accent)"} />
+                    <Cell key={entry.mood} fill={MOOD_COLORS[entry.mood] || "#888"} />
                   ))}
                 </Pie>
-                <Tooltip
-                  contentStyle={{
-                    background: "var(--color-box)",
-                    border: "1px solid var(--color-border)",
-                    borderRadius: 8,
-                  }}
-                  formatter={(value: any) => [`${value}%`]}
-                />
+                <Tooltip {...tooltipStyle} formatter={(value: any) => [`${value}%`]} />
               </PieChart>
             </ResponsiveContainer>
-
-            <ul className="space-y-2.5 text-sm w-full sm:w-auto">
+            <ul className="space-y-2.5 w-full sm:w-auto">
               {moodBreakdown.sort((a, b) => b.count - a.count).map((m) => (
                 <li key={m.mood} className="flex items-center gap-3">
-                  <span className="w-3 h-3 rounded-full shrink-0" style={{ background: MOOD_COLORS[m.mood] }} />
-                  <span className="text-[var(--color-text-primary)] flex-1">{m.label}</span>
-                  <span className="text-[var(--color-text-muted)] text-xs">{m.count}x · {m.value}%</span>
+                  <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: MOOD_COLORS[m.mood] }} />
+                  <span className="text-[var(--color-text-body)] opacity-70 flex-1 text-xs">{m.label}</span>
+                  <span className="text-[var(--color-text-body)] opacity-40 text-xs">{m.count}x · {m.value}%</span>
                 </li>
               ))}
             </ul>

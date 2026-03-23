@@ -21,13 +21,14 @@ const MOOD_MAP: Record<number, { label: string; color: string; emoji: string }> 
   5: { label: "Very Happy", color: "#3b82f6", emoji: "😄" },
 };
 
-export default function HistoryPage() {
+export default function InsightsPage() {
   const [moodData, setMoodData] = useState<any[]>([]);
   const [distribution, setDistribution] = useState<any[]>([]);
   const [weeklyBreakdown, setWeeklyBreakdown] = useState<any[]>([]);
   const [filterDays, setFilterDays] = useState(7);
   const [summary, setSummary] = useState("");
   const [loading, setLoading] = useState(true);
+  const [downloading, setDownloading] = useState(false);
   const [stats, setStats] = useState({
     total: 0,
     average: 0,
@@ -141,25 +142,62 @@ export default function HistoryPage() {
       `Over the past ${filterDays} days, you logged ${data.length} mood entries. ` +
       `Your most frequent mood was "${topMoodInfo?.label || ""}" ${topMoodInfo?.emoji || ""}. ` +
       `Your average mood was ${avg.toFixed(1)} out of 5. ` +
-      `Your mood trend is ${trend === "up" ? "improving 📈" : trend === "down" ? "declining 📉" : "stable ➡️"}. ` +
+      `Your mood trend is ${trend === "up" ? "improving" : trend === "down" ? "declining" : "stable"}. ` +
       `${insight}`
     );
 
     setLoading(false);
   }
 
+  // ✅ Fixed downloadPDF — reads error as text first to handle non-JSON responses
   async function downloadPDF() {
-    const res = await fetch("/api/mood-report", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ moodData, summary }),
-    });
-    const blob = await res.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "mood-report.pdf";
-    a.click();
+    if (!moodData.length) return;
+    setDownloading(true);
+
+    try {
+      const res = await fetch("/api/mood-report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ moodData, summary }),
+      });
+
+      console.log("PDF response status:", res.status);
+      console.log("PDF content-type:", res.headers.get("content-type"));
+
+      if (!res.ok) {
+        // ✅ Read as text first — handles both JSON and HTML error pages
+        const text = await res.text();
+        console.error("PDF error response:", text);
+
+        // Try to parse as JSON, fall back to raw text
+        let errorMessage = text;
+        try {
+          const json = JSON.parse(text);
+          errorMessage = json.error || text;
+        } catch {
+          // not JSON — use raw text (could be Next.js HTML error page)
+          errorMessage = `Server error (${res.status})`;
+        }
+
+        alert("Failed to generate report: " + errorMessage);
+        return;
+      }
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `mymood-insights-${filterDays}d.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Download error:", err);
+      alert("Failed to download report. Please try again.");
+    } finally {
+      setDownloading(false);
+    }
   }
 
   const TrendIcon = () => {
@@ -183,7 +221,7 @@ export default function HistoryPage() {
     <div className="min-h-screen flex items-center justify-center">
       <div className="flex flex-col items-center gap-3">
         <div className="w-8 h-8 border-2 border-[var(--color-text-header)] border-t-transparent rounded-full animate-spin opacity-40" />
-        <p className="text-sm text-[var(--color-text-body)] opacity-40">Loading your mood history...</p>
+        <p className="text-sm text-[var(--color-text-body)] opacity-40">Loading your insights...</p>
       </div>
     </div>
   );
@@ -195,9 +233,9 @@ export default function HistoryPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-[var(--color-text-header)]">Mood History</h1>
+            <h1 className="text-2xl font-bold text-[var(--color-text-header)]">Insights</h1>
             <p className="text-[var(--color-text-body)] opacity-50 text-sm mt-1">
-              Track your emotional trends and insights
+              Track your emotional trends and patterns
             </p>
           </div>
           <div className="flex gap-2">
@@ -230,31 +268,10 @@ export default function HistoryPage() {
             {/* Stat Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                {
-                  icon: CalendarDays,
-                  label: "Entries Logged",
-                  value: stats.total,
-                  sub: `Last ${filterDays} days`,
-                },
-                {
-                  icon: BarChart2,
-                  label: "Avg Mood",
-                  value: `${stats.average}/5`,
-                  sub: stats.trend === "up" ? "Improving" : stats.trend === "down" ? "Declining" : "Stable",
-                  extra: <TrendIcon />,
-                },
-                {
-                  icon: Smile,
-                  label: "Top Mood",
-                  value: `${topMoodInfo?.emoji || ""} ${topMoodInfo?.label || "—"}`,
-                  sub: "Most frequent",
-                },
-                {
-                  icon: TrendingUp,
-                  label: "Current Streak",
-                  value: `${stats.streak} day${stats.streak !== 1 ? "s" : ""}`,
-                  sub: "Consecutive logging",
-                },
+                { icon: CalendarDays, label: "Entries Logged", value: stats.total, sub: `Last ${filterDays} days` },
+                { icon: BarChart2, label: "Avg Mood", value: `${stats.average}/5`, sub: stats.trend === "up" ? "Improving" : stats.trend === "down" ? "Declining" : "Stable", extra: <TrendIcon /> },
+                { icon: Smile, label: "Top Mood", value: `${topMoodInfo?.emoji || ""} ${topMoodInfo?.label || "—"}`, sub: "Most frequent" },
+                { icon: TrendingUp, label: "Current Streak", value: `${stats.streak} day${stats.streak !== 1 ? "s" : ""}`, sub: "Consecutive logging" },
               ].map((card, i) => (
                 <div key={i} className="p-4 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl">
                   <div className="flex items-center justify-between mb-3">
@@ -288,7 +305,7 @@ export default function HistoryPage() {
               </div>
             )}
 
-            {/* AI Summary + PDF */}
+            {/* Wellness Insight + PDF */}
             <div className="p-6 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-semibold text-[var(--color-text-header)] flex items-center gap-2 text-sm">
@@ -297,9 +314,19 @@ export default function HistoryPage() {
                 </h3>
                 <button
                   onClick={downloadPDF}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[var(--color-border)] text-[var(--color-text-body)] opacity-60 hover:opacity-100 hover:border-[var(--color-text-header)] transition text-xs"
+                  disabled={downloading}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[var(--color-border)] text-[var(--color-text-body)] opacity-60 hover:opacity-100 hover:border-[var(--color-text-header)] transition text-xs disabled:cursor-not-allowed"
                 >
-                  <Download size={13} /> Download PDF
+                  {downloading ? (
+                    <>
+                      <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Download size={13} /> Download PDF
+                    </>
+                  )}
                 </button>
               </div>
               <p className="text-sm text-[var(--color-text-body)] opacity-70 leading-relaxed">{summary}</p>
@@ -308,7 +335,6 @@ export default function HistoryPage() {
             {/* Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-              {/* Line Chart */}
               <div className="p-6 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl">
                 <h3 className="mb-1 text-sm font-semibold text-[var(--color-text-header)]">Mood Trend Over Time</h3>
                 <p className="text-xs text-[var(--color-text-body)] opacity-40 mb-5">Your mood score across this period</p>
@@ -317,23 +343,12 @@ export default function HistoryPage() {
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                     <XAxis dataKey="date" tick={{ fill: "var(--color-text-body)", fontSize: 10 }} />
                     <YAxis domain={[1, 5]} ticks={[1, 2, 3, 4, 5]} tick={{ fill: "var(--color-text-body)", fontSize: 10 }} />
-                    <Tooltip
-                      {...tooltipStyle}
-                      formatter={(v: any, n: any, p: any) => [`${p.payload.moodEmoji} ${p.payload.moodLabel}`, "Mood"]}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="moodScore"
-                      stroke="var(--color-text-header)"
-                      strokeWidth={2.5}
-                      dot={{ r: 4, fill: "var(--color-text-header)", strokeWidth: 0 }}
-                      activeDot={{ r: 6 }}
-                    />
+                    <Tooltip {...tooltipStyle} formatter={(v: any, n: any, p: any) => [`${p.payload.moodEmoji} ${p.payload.moodLabel}`, "Mood"]} />
+                    <Line type="monotone" dataKey="moodScore" stroke="var(--color-text-header)" strokeWidth={2.5} dot={{ r: 4, fill: "var(--color-text-header)", strokeWidth: 0 }} activeDot={{ r: 6 }} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
 
-              {/* Pie Chart */}
               <div className="p-6 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl">
                 <h3 className="mb-1 text-sm font-semibold text-[var(--color-text-header)]">Mood Distribution</h3>
                 <p className="text-xs text-[var(--color-text-body)] opacity-40 mb-5">Breakdown of your moods</p>
@@ -357,7 +372,6 @@ export default function HistoryPage() {
                 </div>
               </div>
 
-              {/* Bar Chart */}
               <div className="p-6 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl lg:col-span-2">
                 <h3 className="mb-1 text-sm font-semibold text-[var(--color-text-header)]">Average Mood by Day of Week</h3>
                 <p className="text-xs text-[var(--color-text-body)] opacity-40 mb-5">Which days do you feel best?</p>
@@ -416,10 +430,8 @@ export default function HistoryPage() {
                 </table>
               </div>
             </div>
-
           </>
         )}
-
       </div>
     </div>
   );

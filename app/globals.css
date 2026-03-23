@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
-/* 🌗 Theme Variables */
-:root[data-theme="dark"] {
+/* Theme Variables */
+:root {
   --color-bg-main: #0b0d12;
   --color-bg-card: #141720;
   --color-bg-badge: #1a1f2a;
@@ -11,42 +11,26 @@
   --color-accent: #7c3aed;
 }
 
-:root[data-theme="light"] {
-  --color-bg-main: #f3f4f6; /* soft milk tone (slightly grayish white) */
-  --color-bg-card: #ffffff;
-  --color-bg-badge: #e7e9ed;
-  --color-border: #d2d6db;
-  --color-text-body: #2d2f33; /* improved readability for light surfaces */
-  --color-text-header: #0a0a0a; /* stronger black for headers */
-  --color-accent: #6d5dfc; /* consistent soft purple accent */
-}
-
-/* 🧱 Base Styles */
+/* Base Styles */
 @layer base {
   html {
     @apply scroll-smooth;
   }
 
   body {
-    @apply antialiased transition-colors duration-300;
+    @apply antialiased;
     background-color: var(--color-bg-main);
     color: var(--color-text-body);
     font-family: var(--font-inter), system-ui, sans-serif;
   }
 
-  /* 🔹 Header adapts automatically for both themes */
   header {
     background-color: var(--color-bg-card);
     border-bottom: 1px solid var(--color-border);
     @apply transition-all duration-300 backdrop-blur-md;
   }
 
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
+  h1, h2, h3, h4, h5, h6 {
     color: var(--color-text-header);
     @apply font-semibold;
   }
@@ -60,7 +44,6 @@
     @apply hover:opacity-80 transition-colors duration-200;
   }
 
-  /* ✅ Buttons */
   .btn {
     @apply inline-flex items-center justify-center font-medium px-6 py-3 rounded-full transition-all duration-200;
   }
@@ -77,7 +60,6 @@
     @apply hover:bg-[var(--color-accent)] hover:text-white;
   }
 
-  /* 🌫️ Glass Effect (used in dark mode mostly) */
   .glass {
     background: rgba(20, 23, 32, 0.6);
     backdrop-filter: blur(12px);
@@ -86,7 +68,6 @@
     @apply rounded-2xl;
   }
 
-  /* 🧱 Cards */
   .card {
     background-color: var(--color-bg-card);
     border: 1px solid var(--color-border);
@@ -94,14 +75,12 @@
     @apply rounded-xl p-6 transition-all duration-300;
   }
 
-  /* 🏷️ Badges */
   .badge {
     background-color: var(--color-bg-badge);
     color: var(--color-text-header);
     @apply text-xs px-3 py-1 rounded-full uppercase tracking-wide;
   }
 
-  /* ✨ Icon Accent */
   .icon-accent {
     background: linear-gradient(135deg, #7c3aed, #6d28d9);
     box-shadow: 0 0 15px rgba(124, 58, 237, 0.4);
@@ -109,21 +88,10 @@
   }
 }
 
-/* 🔧 Custom Tailwind Utilities */
 @layer utilities {
-  .bg-main {
-    background-color: var(--color-bg-main);
-  }
-  .bg-card {
-    background-color: var(--color-bg-card);
-  }
-  .text-body {
-    color: var(--color-text-body);
-  }
-  .text-header {
-    color: var(--color-text-header);
-  }
-  .border-theme {
-    border-color: var(--color-border);
-  }
+  .bg-main { background-color: var(--color-bg-main); }
+  .bg-card { background-color: var(--color-bg-card); }
+  .text-body { color: var(--color-text-body); }
+  .text-header { color: var(--color-text-header); }
+  .border-theme { border-color: var(--color-border); }
 }
