@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 
 const EMOJIS = ["😊", "😌", "🙂", "😃", "🌿"];
@@ -18,7 +18,6 @@ const FEATURES = [
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 12h4l3-9 4 18 3-9h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
     ),
-    color: "bg-white/5 text-white",
     title: "Mood Tracker",
     desc: "Log your mood daily with emoji, notes, and streaks. See your emotional patterns over time.",
   },
@@ -26,7 +25,6 @@ const FEATURES = [
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
     ),
-    color: "bg-white/5 text-white",
     title: "AI Chatbot",
     desc: "Talk to an empathetic AI anytime you need to express yourself or seek guidance.",
   },
@@ -34,7 +32,6 @@ const FEATURES = [
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
     ),
-    color: "bg-white/5 text-white",
     title: "Journal",
     desc: "Write private entries to reflect on your day, feelings, and personal growth journey.",
   },
@@ -42,7 +39,6 @@ const FEATURES = [
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M18 20V10M12 20V4M6 20v-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
     ),
-    color: "bg-white/5 text-white",
     title: "Insights",
     desc: "Get AI-powered analytics on your mood trends, best days, and emotional patterns.",
   },
@@ -50,7 +46,6 @@ const FEATURES = [
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="1.5"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
     ),
-    color: "bg-white/5 text-white",
     title: "Community",
     desc: "Share feelings anonymously and connect with others on the same wellness journey.",
   },
@@ -58,7 +53,6 @@ const FEATURES = [
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
     ),
-    color: "bg-white/5 text-white",
     title: "Mood Diet Plans",
     desc: "Get food recommendations tailored to your current mood and mental state.",
   },
@@ -67,21 +61,18 @@ const FEATURES = [
 const TESTIMONIALS = [
   {
     initials: "AO",
-    color: "bg-white/10 text-white",
     name: "Amara O.",
     duration: "Using MyMood for 3 months",
     text: "MyMood helped me identify that I feel worst on Monday mornings. Now I protect that time and my whole week improved.",
   },
   {
     initials: "JN",
-    color: "bg-white/10 text-white",
     name: "James N.",
     duration: "Using MyMood for 2 months",
     text: "The AI chatbot is incredible. It's like having a therapist in my pocket — non-judgmental and always available.",
   },
   {
     initials: "FK",
-    color: "bg-white/10 text-white",
     name: "Fatima K.",
     duration: "Using MyMood for 1 month",
     text: "I love that the community is anonymous. I can share how I really feel without fear of judgment. So freeing.",
@@ -108,6 +99,9 @@ const FAQS = [
 ];
 
 export default function HomePage() {
+  // ✅ Fixed — use createClient instead of importing supabase directly
+  const supabase = createClient();
+
   const [emojiIndex, setEmojiIndex] = useState(0);
   const [imageIndex, setImageIndex] = useState(0);
   const [email, setEmail] = useState("");
@@ -265,7 +259,6 @@ export default function HomePage() {
               transition={{ duration: 0.8 }}
               className="relative w-56 md:w-64 bg-[#0f0f18] border border-white/8 rounded-[28px] p-4 z-10"
             >
-              {/* Status bar */}
               <div className="flex justify-between items-center mb-3 px-1">
                 <span className="text-xs text-gray-600">9:41</span>
                 <div className="w-12 h-2 bg-white/5 rounded-full" />
@@ -275,7 +268,6 @@ export default function HomePage() {
               <p className="text-xs text-gray-600">Good morning,</p>
               <p className="text-sm font-semibold text-white mb-4">Frank 👋</p>
 
-              {/* Stat cards */}
               <div className="grid grid-cols-2 gap-2 mb-3">
                 {[
                   { val: "7🔥", lbl: "Day streak", color: "text-white", w: "70%", bg: "bg-white" },
@@ -291,7 +283,6 @@ export default function HomePage() {
                 ))}
               </div>
 
-              {/* Mood selector */}
               <div className="flex gap-1.5 mb-3">
                 {["😞","😕","😐","🙂","😄"].map((e, i) => (
                   <div
@@ -307,7 +298,6 @@ export default function HomePage() {
                 ))}
               </div>
 
-              {/* Mini chart */}
               <div className="bg-white/4 rounded-xl p-2.5">
                 <p className="text-xs text-gray-600 mb-2">Mood this week</p>
                 <div className="flex items-end gap-1 h-8">
@@ -560,7 +550,7 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             className="mt-4 text-green-400 text-sm"
           >
-            ✅ Thanks for subscribing! You'll start receiving tips soon.
+            Thanks for subscribing! You will start receiving tips soon.
           </motion.p>
         )}
         {error && (
