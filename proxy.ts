@@ -29,6 +29,11 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
+  // ✅ Redirect logged-in users away from landing page to dashboard
+  if (pathname === "/" && user) {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
+
   // ✅ Protect /dashboard — must be logged in
   if (pathname.startsWith("/dashboard") && !user) {
     return NextResponse.redirect(new URL("/login", request.url));
@@ -59,6 +64,7 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
+    "/",                  // ✅ added — intercept landing page for logged-in users
     "/dashboard/:path*",
     "/admin/:path*",
     "/login",
