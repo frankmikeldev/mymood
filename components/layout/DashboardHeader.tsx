@@ -20,19 +20,25 @@ export default function DashboardHeader() {
           <nav className="hidden md:flex gap-8 text-sm font-medium">
             <Link
               href="/dashboard"
-              className="text-white hover:opacity-70 transition"
+              className="text-white hover:text-[var(--color-accent)] transition-colors"
             >
               Dashboard
             </Link>
             <Link
+              href="/dashboard/history"
+              className="text-white hover:text-[var(--color-accent)] transition-colors"
+            >
+              History
+            </Link>
+            <Link
               href="/dashboard/insights"
-              className="text-white hover:opacity-70 transition"
+              className="text-white hover:text-[var(--color-accent)] transition-colors"
             >
               Insights
             </Link>
             <Link
               href="/dashboard/settings"
-              className="text-white hover:opacity-70 transition"
+              className="text-white hover:text-[var(--color-accent)] transition-colors"
             >
               Profile
             </Link>
@@ -53,21 +59,28 @@ export default function DashboardHeader() {
             <Link
               href="/dashboard"
               onClick={() => setOpen(false)}
-              className="text-white hover:opacity-70 transition"
+              className="text-white hover:text-[var(--color-accent)] transition-colors"
             >
               Dashboard
             </Link>
             <Link
+              href="/dashboard/history"
+              onClick={() => setOpen(false)}
+              className="text-white hover:text-[var(--color-accent)] transition-colors"
+            >
+              History
+            </Link>
+            <Link
               href="/dashboard/insights"
               onClick={() => setOpen(false)}
-              className="text-white hover:opacity-70 transition"
+              className="text-white hover:text-[var(--color-accent)] transition-colors"
             >
               Insights
             </Link>
             <Link
               href="/dashboard/settings"
               onClick={() => setOpen(false)}
-              className="text-white hover:opacity-70 transition"
+              className="text-white hover:text-[var(--color-accent)] transition-colors"
             >
               Profile
             </Link>
