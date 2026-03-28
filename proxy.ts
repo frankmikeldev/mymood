@@ -2,7 +2,8 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export async function middleware(request: NextRequest) {
+// ✅ Renamed from "middleware" to "proxy"
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   let response = NextResponse.next({
@@ -29,17 +30,17 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  // ✅ Redirect logged-in users away from landing page to dashboard
+  // ✅ Redirect logged-in users away from landing page
   if (pathname === "/" && user) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
-  // ✅ Protect /dashboard — must be logged in
+  // ✅ Protect /dashboard
   if (pathname.startsWith("/dashboard") && !user) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // ✅ Protect /admin — must be logged in
+  // ✅ Protect /admin
   if (pathname.startsWith("/admin") && pathname !== "/admin/login" && !user) {
     return NextResponse.redirect(new URL("/admin/login", request.url));
   }
@@ -64,7 +65,7 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/",                  // ✅ added — intercept landing page for logged-in users
+    "/",
     "/dashboard/:path*",
     "/admin/:path*",
     "/login",
