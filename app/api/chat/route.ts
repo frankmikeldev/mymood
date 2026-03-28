@@ -1,4 +1,5 @@
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 
 import Groq from "groq-sdk";
 import { NextResponse } from "next/server";
@@ -7,13 +8,12 @@ import { createClient } from "@/utils/supabase/server";
 const apiKey = process.env.GROQ_API_KEY;
 const groq = apiKey ? new Groq({ apiKey }) : null;
 
-// ✅ Simple in-memory rate limiter (no external service needed)
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 
 function isRateLimited(userId: string): boolean {
   const now = Date.now();
-  const windowMs = 60 * 1000; // 1 minute window
-  const maxRequests = 20; // 20 messages per minute per user
+  const windowMs = 60 * 1000;
+  const maxRequests = 20;
 
   const entry = rateLimitMap.get(userId);
 
@@ -35,7 +35,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "AI configuration error" }, { status: 500 });
     }
 
-    // ✅ Auth check
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -43,7 +42,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // ✅ Rate limit check
     if (isRateLimited(user.id)) {
       return NextResponse.json(
         { error: "Too many messages. Please wait a moment." },
@@ -53,15 +51,12 @@ export async function POST(req: Request) {
 
     const { messages, sessionId } = await req.json();
 
-    // ✅ Validate messages array
     if (!Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json({ error: "Invalid messages" }, { status: 400 });
     }
 
-    // ✅ Limit message history to last 20 to prevent token abuse
     const trimmedMessages = messages.slice(-20);
 
-    // Fetch latest mood
     const { data: mood } = await supabase
       .from("mood_entries")
       .select("mood")
@@ -72,7 +67,6 @@ export async function POST(req: Request) {
 
     const currentMood = mood?.mood || "unknown";
 
-    // Fetch memories
     const { data: memories } = await supabase
       .from("user_memory")
       .select("memory")
@@ -81,10 +75,9 @@ export async function POST(req: Request) {
 
     const memoryContext = memories?.map((m) => m.memory).join("\n") || "";
 
-    // Generate AI response
     const completion = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
-      max_tokens: 500, // ✅ Cap response length to prevent abuse
+      max_tokens: 500,
       messages: [
         {
           role: "system",
@@ -110,7 +103,6 @@ Your job:
       return NextResponse.json({ error: "No response from AI" }, { status: 500 });
     }
 
-    // ✅ Save to chat history (only if sessionId provided)
     if (sessionId) {
       await supabase.from("chat_messages").insert({
         session_id: sessionId,
