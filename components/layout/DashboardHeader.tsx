@@ -28,7 +28,7 @@ export default function DashboardHeader() {
               href="/dashboard/history"
               className="text-white hover:text-[var(--color-accent)] transition-colors"
             >
-              History
+            
             </Link>
             <Link
               href="/dashboard/insights"
