@@ -25,12 +25,6 @@ export default function DashboardHeader() {
               Dashboard
             </Link>
             <Link
-              href="/dashboard/history"
-              className="text-white hover:text-[var(--color-accent)] transition-colors"
-            >
-              History
-            </Link>
-            <Link
               href="/dashboard/insights"
               className="text-white hover:text-[var(--color-accent)] transition-colors"
             >
@@ -62,13 +56,6 @@ export default function DashboardHeader() {
               className="text-white hover:text-[var(--color-accent)] transition-colors"
             >
               Dashboard
-            </Link>
-            <Link
-              href="/dashboard/history"
-              onClick={() => setOpen(false)}
-              className="text-white hover:text-[var(--color-accent)] transition-colors"
-            >
-              History
             </Link>
             <Link
               href="/dashboard/insights"
