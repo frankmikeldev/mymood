@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+// ✅ Renamed from "middleware" to "proxy"
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -29,18 +30,22 @@ export async function proxy(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
+  // ✅ Redirect logged-in users away from landing page
   if (pathname === "/" && user) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
+  // ✅ Protect /dashboard
   if (pathname.startsWith("/dashboard") && !user) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
+  // ✅ Protect /admin
   if (pathname.startsWith("/admin") && pathname !== "/admin/login" && !user) {
     return NextResponse.redirect(new URL("/admin/login", request.url));
   }
 
+  // ✅ Redirect logged-in users away from auth pages
   if (
     (pathname === "/login" ||
       pathname === "/signup" ||
@@ -50,15 +55,13 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
+  // ✅ Redirect logged-in admins away from /admin/login
   if (pathname === "/admin/login" && user) {
     return NextResponse.redirect(new URL("/admin", request.url));
   }
 
   return response;
 }
-
-// ✅ Required alias for Next.js 16 proxy.ts
-export const middleware = proxy;
 
 export const config = {
   matcher: [
