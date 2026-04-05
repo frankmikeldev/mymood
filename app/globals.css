@@ -95,3 +95,9 @@
   .text-header { color: var(--color-text-header); }
   .border-theme { border-color: var(--color-border); }
 }
+/* Prevent content hiding behind bottom nav on mobile */
+@media (max-width: 1024px) {
+  .dashboard-content {
+    padding-bottom: 80px;
+  }
+}
