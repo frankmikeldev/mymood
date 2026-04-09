@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Manrope } from "next/font/google";
 import "./globals.css";
 import PublicHeader from "@/components/layout/PublicHeader";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 
-const inter = Inter({
+const manrope = Manrope({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-manrope",
+  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
 });
 
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
     "MyMood helps you track your emotions and discover personalized wellness tips.",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
     title: "MyMood",
   },
 };
@@ -27,32 +28,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={manrope.variable}>
       <head>
-        {/* Theme */}
-        <meta name="theme-color" content="#0b0d12" />
-
-        {/* Favicon */}
+        <meta name="theme-color" content="#F5F0E8" />
         <link rel="icon" href="/icons/favicon.ico" />
         <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png" />
         <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png" />
-
-        {/* Apple PWA */}
         <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="MyMood" />
-
-        {/* Android PWA */}
         <meta name="mobile-web-app-capable" content="yes" />
-
-        {/* Viewport */}
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1, maximum-scale=1"
         />
-
-        {/* Service Worker */}
         <script dangerouslySetInnerHTML={{
           __html: `
             if ('serviceWorker' in navigator) {
@@ -63,27 +53,31 @@ export default function RootLayout({
           `
         }} />
       </head>
-      <body
-        className={`${inter.variable} font-sans antialiased transition-colors duration-300`}
-      >
+      <body className="font-sans antialiased transition-colors duration-300">
         <ThemeProvider>
           <div className="flex flex-col min-h-screen bg-[var(--color-bg-main)] text-[var(--color-text-body)]">
-
-            {/* Public Navbar */}
             <PublicHeader />
-
-            {/* Main Content */}
             <main className="flex-grow pt-20">
               {children}
             </main>
-
-            {/* Footer */}
-            <footer className="border-t border-[var(--color-border)] py-10 text-center text-sm bg-[var(--color-bg-card)]">
-              <p className="text-[var(--color-text-body)] opacity-50">
+            <footer
+              className="py-10 text-center text-sm"
+              style={{
+                backgroundColor: "#EEF2E6",
+                borderTop: "1px solid #E2DDD6",
+              }}
+            >
+              <p
+                style={{
+                  color: "#555555",
+                  fontFamily: "'Manrope', sans-serif",
+                  fontWeight: 400,
+                  fontSize: "14px",
+                }}
+              >
                 © {new Date().getFullYear()} MyMood. All rights reserved.
               </p>
             </footer>
-
           </div>
         </ThemeProvider>
       </body>

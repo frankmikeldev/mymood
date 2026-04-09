@@ -1,17 +1,39 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
-/* Theme Variables */
+/* ─── Theme Variables ──────────────────────────────────────────── */
 :root {
-  --color-bg-main: #0b0d12;
-  --color-bg-card: #141720;
-  --color-bg-badge: #1a1f2a;
-  --color-border: #1f2735;
-  --color-text-body: #9ca3af;
-  --color-text-header: #ffffff;
-  --color-accent: #7c3aed;
+  /* Backgrounds */
+  --color-bg-main:   #F5F0E8;
+  --color-bg-card:   #EDE8DF;
+  --color-bg-badge:  #E6E0D5;
+  --color-bg-dark:   #1C3A2E;
+  --color-bg-dark-2: #24503E;
+  --color-bg-sage:   #EEF2E6;
+
+  /* Borders */
+  --color-border:      #E2DDD6;
+  --color-border-dark: #2A4A3A;
+
+  /* Text — near-black for all copy, no green */
+  --color-text-header: #111111;
+  --color-text-body:   #444444;
+  --color-text-muted:  #6b7280;
+  --color-text-subtle: #9ca3af;
+  --color-text-light:  #F5F0E8;
+
+  /* Accents */
+  --color-cta:       #E8521A;
+  --color-cta-hover: #D4480F;
+  --color-accent:    #111111;
+
+  /* Shadows */
+  --shadow-warm: 0 4px 24px rgba(0, 0, 0, 0.08);
+  --shadow-cta:  0 4px 20px rgba(232, 82, 26, 0.35);
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.07);
 }
 
-/* Base Styles */
+/* ─── Base Styles ──────────────────────────────────────────────── */
 @layer base {
   html {
     @apply scroll-smooth;
@@ -21,81 +43,138 @@
     @apply antialiased;
     background-color: var(--color-bg-main);
     color: var(--color-text-body);
-    font-family: var(--font-inter), system-ui, sans-serif;
+    font-family: 'Manrope', system-ui, sans-serif;
+    font-size: 17px;
+    line-height: 1.75;
   }
 
   header {
-    background-color: var(--color-bg-card);
+    background-color: rgba(245, 240, 232, 0.92);
     border-bottom: 1px solid var(--color-border);
     @apply transition-all duration-300 backdrop-blur-md;
   }
 
   h1, h2, h3, h4, h5, h6 {
     color: var(--color-text-header);
-    @apply font-semibold;
+    font-weight: 800;
+    font-family: 'Manrope', system-ui, sans-serif;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
   }
 
   p {
     color: var(--color-text-body);
+    font-size: 17px;
+    line-height: 1.75;
+    font-weight: 400;
   }
 
   a {
-    color: var(--color-accent);
-    @apply hover:opacity-80 transition-colors duration-200;
+    color: var(--color-text-header);
+    @apply transition-colors duration-200;
   }
 
+  label {
+    color: var(--color-text-body);
+    font-weight: 600;
+    font-size: 13px;
+    font-family: 'Manrope', system-ui, sans-serif;
+  }
+
+  input, textarea, select {
+    font-family: 'Manrope', system-ui, sans-serif;
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--color-text-header);
+  }
+
+  input::placeholder, textarea::placeholder {
+    color: var(--color-text-subtle);
+  }
+
+  /* ── Reusable Components ── */
   .btn {
-    @apply inline-flex items-center justify-center font-medium px-6 py-3 rounded-full transition-all duration-200;
+    @apply inline-flex items-center justify-center px-6 py-3 rounded-full transition-all duration-200;
+    font-family: 'Manrope', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 15px;
   }
 
   .btn-primary {
-    background-color: var(--color-accent);
+    background-color: var(--color-cta);
     color: white;
-    @apply hover:opacity-90;
+    box-shadow: var(--shadow-cta);
+  }
+  .btn-primary:hover {
+    background-color: var(--color-cta-hover);
+    transform: translateY(-1px);
   }
 
   .btn-outline {
-    border: 1px solid var(--color-accent);
-    color: var(--color-accent);
-    @apply hover:bg-[var(--color-accent)] hover:text-white;
+    border: 1.5px solid var(--color-text-header);
+    color: var(--color-text-header);
   }
-
-  .glass {
-    background: rgba(20, 23, 32, 0.6);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(31, 39, 53, 0.7);
-    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.3);
-    @apply rounded-2xl;
+  .btn-outline:hover {
+    background-color: var(--color-text-header);
+    color: var(--color-text-light);
   }
 
   .card {
-    background-color: var(--color-bg-card);
+    background-color: #FFFFFF;
     border: 1px solid var(--color-border);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-    @apply rounded-xl p-6 transition-all duration-300;
+    box-shadow: var(--shadow-card);
+    @apply rounded-2xl p-6 transition-all duration-300;
   }
 
   .badge {
     background-color: var(--color-bg-badge);
-    color: var(--color-text-header);
-    @apply text-xs px-3 py-1 rounded-full uppercase tracking-wide;
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    font-family: 'Manrope', system-ui, sans-serif;
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: 0.02em;
+    @apply px-3 py-1 rounded-full;
   }
 
-  .icon-accent {
-    background: linear-gradient(135deg, #7c3aed, #6d28d9);
-    box-shadow: 0 0 15px rgba(124, 58, 237, 0.4);
-    @apply p-2 rounded-full;
+  /* Dark section overrides */
+  .dark-section {
+    background-color: var(--color-bg-dark);
+    color: var(--color-text-light);
+  }
+  .dark-section h1,
+  .dark-section h2,
+  .dark-section h3 {
+    color: var(--color-text-light);
+    letter-spacing: -0.02em;
+  }
+  .dark-section p {
+    color: rgba(245, 240, 232, 0.75);
+  }
+
+  /* Sage section — light green bg like AnonymousSection */
+  .sage-section {
+    background-color: var(--color-bg-sage);
   }
 }
 
+/* ─── Utility Classes ──────────────────────────────────────────── */
 @layer utilities {
-  .bg-main { background-color: var(--color-bg-main); }
-  .bg-card { background-color: var(--color-bg-card); }
-  .text-body { color: var(--color-text-body); }
-  .text-header { color: var(--color-text-header); }
-  .border-theme { border-color: var(--color-border); }
+  .bg-main        { background-color: var(--color-bg-main); }
+  .bg-card        { background-color: var(--color-bg-card); }
+  .bg-dark        { background-color: var(--color-bg-dark); }
+  .bg-sage        { background-color: var(--color-bg-sage); }
+  .bg-white-card  { background-color: #FFFFFF; }
+  .text-body      { color: var(--color-text-body); }
+  .text-header    { color: var(--color-text-header); }
+  .text-muted     { color: var(--color-text-muted); }
+  .text-subtle    { color: var(--color-text-subtle); }
+  .text-light     { color: var(--color-text-light); }
+  .border-theme   { border-color: var(--color-border); }
+  .cta-text       { color: var(--color-cta); }
 }
-/* Prevent content hiding behind bottom nav on mobile */
+
+/* ─── Mobile bottom nav padding ───────────────────────────────── */
 @media (max-width: 1024px) {
   .dashboard-content {
     padding-bottom: 80px;

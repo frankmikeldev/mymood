@@ -8,36 +8,30 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // 🌑 Backgrounds
-        main: '#0b0d12', // deep background
-        card: '#141720', // section/card
-        badge: '#1a1f2a', // badges, pills
-
-        // ✨ Text
-        header: '#ffffff', // white headings
-        body: '#9ca3af', // soft gray text
-        muted: '#6b7280', // dimmed text
-
-        // 💜 Accent (for icons)
-        accent: {
-          purple: '#7c3aed',
-          dark: '#6d28d9',
-        },
-
-        // 🧱 Border
-        border: '#1f2735',
+        main:           '#F5F0E8',
+        card:           '#EDE8DF',
+        badge:          '#E6E0D5',
+        forest:         '#1C3A2E',
+        'forest-light': '#24503E',
+        cta:            '#E8521A',
+        'cta-hover':    '#D4480F',
+        header:         '#1a1a1a',
+        body:           '#222222',
+        muted:          '#6b7280',
+        border:         '#D8D1C4',
+        'border-dark':  '#2A4A3A',
       },
 
-      // 🌟 Shadows
       boxShadow: {
-        glow: '0 0 20px rgba(124, 58, 237, 0.4)',
-        card: '0 4px 25px rgba(0, 0, 0, 0.3)',
+        warm: '0 4px 24px rgba(0, 0, 0, 0.08)',
+        cta:  '0 4px 20px rgba(232, 82, 26, 0.35)',
+        card: '0 2px 16px rgba(0, 0, 0, 0.06)',
       },
 
-      // 🧩 Radius & Blur
       borderRadius: {
-        xl: '1rem',
+        xl:   '1rem',
         '2xl': '1.5rem',
+        '3xl': '2rem',
       },
 
       backdropBlur: {
@@ -45,9 +39,19 @@ module.exports = {
         md: '12px',
       },
 
-      // 🖋 Fonts
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans:    ['var(--font-manrope)', 'Manrope', 'system-ui', 'sans-serif'],
+        display: ['var(--font-manrope)', 'Manrope', 'system-ui', 'sans-serif'],
+      },
+
+      fontSize: {
+        body: ['17px', { lineHeight: '1.65' }],
+      },
+
+      fontWeight: {
+        nav:      '500',
+        btn:      '700',
+        headline: '800',
       },
     },
   },

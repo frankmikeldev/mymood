@@ -9,6 +9,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
+const font = "'Manrope', sans-serif";
+
 const signupSchema = z
   .object({
     fullName: z.string().min(2, "Full name is required"),
@@ -52,21 +54,17 @@ export default function SignupPage() {
     setErrorMsg("");
     setSuccessMsg("");
     setLoading(true);
-
     const { email, password, fullName } = data;
-
     const { data: authData, error } = await supabase.auth.signUp({
       email,
       password,
       options: { data: { full_name: fullName } },
     });
-
     if (error) {
       setErrorMsg(error.message);
       setLoading(false);
       return;
     }
-
     if (authData.user) {
       await supabase.from("user_profiles").upsert({
         id: authData.user.id,
@@ -75,7 +73,6 @@ export default function SignupPage() {
         created_at: new Date().toISOString(),
       });
     }
-
     setSuccessMsg("Check your email to confirm your account!");
     setTimeout(() => router.push("/login"), 3000);
     setLoading(false);
@@ -86,9 +83,7 @@ export default function SignupPage() {
     setGoogleLoading(true);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
     if (error) {
       setErrorMsg(error.message);
@@ -109,48 +104,66 @@ export default function SignupPage() {
   );
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-[#0a0a0f] px-6 py-12 relative overflow-hidden">
-
-      <div
-        className="fixed inset-0 -z-10 opacity-[0.03]"
-        style={{
-          backgroundImage: `linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)`,
-          backgroundSize: "40px 40px",
-        }}
-      />
-
+    <main
+      className="min-h-screen flex items-center justify-center px-6 py-12"
+      style={{ backgroundColor: "#F5F0E8" }}
+    >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
         className="w-full max-w-sm"
       >
-
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-4">
+          <div
+            className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4"
+            style={{ backgroundColor: "#EDE8DF", border: "1px solid #D8D1C4" }}
+          >
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10" fill="white" fillOpacity="0.15"/>
-              <path d="M8 13s1.5 2 4 2 4-2 4-2" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
-              <circle cx="9" cy="10" r="1" fill="white"/>
-              <circle cx="15" cy="10" r="1" fill="white"/>
+              <circle cx="12" cy="12" r="10" fill="#E8521A" fillOpacity="0.15"/>
+              <path d="M8 13s1.5 2 4 2 4-2 4-2" stroke="#E8521A" strokeWidth="1.5" strokeLinecap="round"/>
+              <circle cx="9" cy="10" r="1" fill="#111111"/>
+              <circle cx="15" cy="10" r="1" fill="#111111"/>
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-white">Create your account</h1>
-          <p className="text-gray-500 text-sm mt-1">Start your wellness journey today — it's free</p>
+          <h1
+            className="text-2xl"
+            style={{ fontWeight: 800, color: "#111111", fontFamily: font, letterSpacing: "-0.02em" }}
+          >
+            Create your account
+          </h1>
+          <p
+            className="text-sm mt-1"
+            style={{ color: "#6b7280", fontFamily: font, fontWeight: 400 }}
+          >
+            Start your wellness journey today — it's free
+          </p>
         </div>
 
         {/* Card */}
-        <div className="bg-[#0f0f18] border border-white/5 rounded-2xl p-8">
-
+        <div
+          className="rounded-2xl p-8"
+          style={{ backgroundColor: "#FFFFFF", border: "1px solid #E2DDD6", boxShadow: "0 4px 24px rgba(0,0,0,0.07)" }}
+        >
           {/* Google Button */}
           <button
             onClick={handleGoogleSignup}
             disabled={googleLoading}
-            className="w-full flex items-center justify-center gap-3 py-3 rounded-xl border border-white/10 bg-white/4 text-white text-sm font-medium hover:bg-white/8 hover:border-white/20 transition disabled:opacity-50 disabled:cursor-not-allowed mb-5"
+            className="w-full flex items-center justify-center gap-3 py-3 rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed mb-5"
+            style={{
+              border: "1px solid #D8D1C4",
+              backgroundColor: "#F5F0E8",
+              color: "#111111",
+              fontSize: "14px",
+              fontWeight: 500,
+              fontFamily: font,
+            }}
+            onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#EDE8DF")}
+            onMouseLeave={e => (e.currentTarget.style.backgroundColor = "#F5F0E8")}
           >
             {googleLoading ? (
-              <div className="w-4 h-4 border-2 border-white/20 border-t-white/70 rounded-full animate-spin" />
+              <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
             ) : (
               <svg width="18" height="18" viewBox="0 0 24 24">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -164,9 +177,9 @@ export default function SignupPage() {
 
           {/* Divider */}
           <div className="flex items-center gap-3 mb-5">
-            <div className="flex-1 h-px bg-white/8" />
-            <span className="text-xs text-gray-600">or sign up with email</span>
-            <div className="flex-1 h-px bg-white/8" />
+            <div className="flex-1 h-px" style={{ backgroundColor: "#E2DDD6" }} />
+            <span style={{ fontSize: "12px", color: "#9ca3af", fontFamily: font }}>or sign up with email</span>
+            <div className="flex-1 h-px" style={{ backgroundColor: "#E2DDD6" }} />
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
@@ -181,7 +194,10 @@ export default function SignupPage() {
 
               return (
                 <div key={field.key}>
-                  <label className="block text-xs font-medium text-gray-400 mb-2">
+                  <label
+                    className="block text-xs mb-2"
+                    style={{ fontWeight: 600, color: "#444444", fontFamily: font }}
+                  >
                     {field.label}
                   </label>
                   <div className="relative">
@@ -190,20 +206,32 @@ export default function SignupPage() {
                       type={showToggle ? (visible ? "text" : "password") : field.type}
                       {...register(field.key as keyof SignupFormData)}
                       placeholder={field.placeholder}
-                      className="w-full px-4 py-3 rounded-xl bg-white/4 border border-white/8 text-white placeholder:text-gray-600 text-sm outline-none focus:border-white/20 transition pr-10"
+                      className="w-full px-4 py-3 rounded-xl outline-none transition"
+                      style={{
+                        backgroundColor: "#F5F0E8",
+                        border: "1px solid #D8D1C4",
+                        color: "#111111",
+                        fontSize: "15px",
+                        fontFamily: font,
+                        fontWeight: 400,
+                        paddingRight: showToggle ? "2.5rem" : "1rem",
+                      }}
+                      onFocus={e => (e.currentTarget.style.borderColor = "#E8521A")}
+                      onBlur={e => (e.currentTarget.style.borderColor = "#D8D1C4")}
                     />
                     {showToggle && (
                       <button
                         type="button"
                         onClick={toggle}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-300 transition"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 transition"
+                        style={{ color: "#9ca3af" }}
                       >
                         <EyeIcon open={visible} />
                       </button>
                     )}
                   </div>
                   {errors[field.key as keyof SignupFormData] && (
-                    <p className="text-red-400 text-xs mt-1.5">
+                    <p className="text-xs mt-1.5" style={{ color: "#E8521A", fontFamily: font }}>
                       {errors[field.key as keyof SignupFormData]?.message?.toString()}
                     </p>
                   )}
@@ -212,15 +240,21 @@ export default function SignupPage() {
             })}
 
             {errorMsg && (
-              <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-red-500/8 border border-red-500/15 text-red-400 text-xs">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0" />
+              <div
+                className="flex items-center gap-2 px-4 py-3 rounded-xl text-xs"
+                style={{ backgroundColor: "rgba(232,82,26,0.06)", border: "1px solid rgba(232,82,26,0.2)", color: "#E8521A", fontFamily: font }}
+              >
+                <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: "#E8521A" }} />
                 {errorMsg}
               </div>
             )}
 
             {successMsg && (
-              <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-green-500/8 border border-green-500/15 text-green-400 text-xs">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-400 shrink-0" />
+              <div
+                className="flex items-center gap-2 px-4 py-3 rounded-xl text-xs"
+                style={{ backgroundColor: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.2)", color: "#16a34a", fontFamily: font }}
+              >
+                <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: "#16a34a" }} />
                 {successMsg}
               </div>
             )}
@@ -228,23 +262,38 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 rounded-xl bg-white text-[#0a0a0f] font-semibold text-sm hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
+              className="w-full py-3 rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2 hover:-translate-y-0.5"
+              style={{
+                backgroundColor: "#E8521A",
+                color: "#ffffff",
+                fontWeight: 700,
+                fontSize: "15px",
+                fontFamily: font,
+                boxShadow: "0 4px 20px rgba(232,82,26,0.3)",
+              }}
+              onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#D4480F")}
+              onMouseLeave={e => (e.currentTarget.style.backgroundColor = "#E8521A")}
             >
               {loading ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-black/20 border-t-black/70 rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   Creating account...
                 </>
-              ) : (
-                "Create account"
-              )}
+              ) : "Create account"}
             </button>
           </form>
         </div>
 
-        <p className="text-center text-sm text-gray-600 mt-6">
+        <p
+          className="text-center text-sm mt-6"
+          style={{ color: "#6b7280", fontFamily: font }}
+        >
           Already have an account?{" "}
-          <Link href="/login" className="text-gray-300 hover:text-white font-medium transition">
+          <Link
+            href="/login"
+            className="hover:underline transition"
+            style={{ color: "#111111", fontWeight: 600, fontFamily: font }}
+          >
             Sign in
           </Link>
         </p>
