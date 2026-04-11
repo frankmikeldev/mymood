@@ -1,18 +1,373 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import { Lightbulb } from "lucide-react";
+import { Lightbulb, BookOpen, ChevronDown, ChevronUp, X, Play } from "lucide-react";
+
+const font = "'Manrope', sans-serif";
 
 type MoodContent = {
   story: string;
   storyFull: string;
   whyItHelps: string;
   whyItHelpsFull: string;
-  tips: { title: string; description: string }[];
+  tips: {
+    title: string;
+    description: string;
+    action?: {
+      label: string;
+      type: "breathing" | "journal" | "link" | "video";
+      href?: string;
+    };
+  }[];
   actionPlan: string[];
 };
 
+// ─── Breathing Modal ───────────────────────────────────────────────────────────
+function BreathingModal({ onClose }: { onClose: () => void }) {
+  const [started, setStarted] = useState(false);
+  const [phase, setPhase]     = useState<"Inhale" | "Hold" | "Exhale" | "Hold ">("Inhale");
+  const [count, setCount]     = useState(0);
+  const [cycle, setCycle]     = useState(0);
+  const TOTAL_CYCLES = 4;
+
+  const PHASES: { label: "Inhale" | "Hold" | "Exhale" | "Hold "; duration: number }[] = [
+    { label: "Inhale", duration: 4 },
+    { label: "Hold",   duration: 4 },
+    { label: "Exhale", duration: 4 },
+    { label: "Hold ",  duration: 4 },
+  ];
+
+  const start = () => {
+    setStarted(true);
+    setPhase("Inhale");
+    setCount(4);
+    setCycle(0);
+    runPhase(0, 0);
+  };
+
+  const runPhase = (phaseIndex: number, cycleNum: number) => {
+    const current = PHASES[phaseIndex];
+    setPhase(current.label);
+    let remaining = current.duration;
+    setCount(remaining);
+
+    const tick = setInterval(() => {
+      remaining--;
+      setCount(remaining);
+      if (remaining <= 0) {
+        clearInterval(tick);
+        const nextPhase = (phaseIndex + 1) % PHASES.length;
+        const nextCycle = nextPhase === 0 ? cycleNum + 1 : cycleNum;
+        if (nextCycle >= TOTAL_CYCLES) {
+          setPhase("Inhale");
+          setCount(0);
+          setStarted(false);
+          setCycle(TOTAL_CYCLES);
+          return;
+        }
+        setCycle(nextCycle);
+        runPhase(nextPhase, nextCycle);
+      }
+    }, 1000);
+  };
+
+  const isExpand = phase === "Inhale";
+  const done     = !started && cycle === TOTAL_CYCLES;
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 9999, backgroundColor: "rgba(0,0,0,0.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}>
+      <div style={{ backgroundColor: "#F5F0E8", borderRadius: "24px", padding: "40px 32px", width: "100%", maxWidth: "420px", textAlign: "center", position: "relative" }}>
+        <button onClick={onClose} style={{ position: "absolute", top: "16px", right: "16px", background: "none", border: "none", cursor: "pointer", color: "#9ca3af" }}>
+          <X size={20} />
+        </button>
+        <h2 style={{ fontSize: "18px", fontWeight: 800, color: "#111111", fontFamily: font, marginBottom: "24px" }}>Breathing Exercise</h2>
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: "20px" }}>
+          <div style={{ width: started ? (isExpand ? "180px" : "140px") : "160px", height: started ? (isExpand ? "180px" : "140px") : "160px", borderRadius: "50%", backgroundColor: "#FFFFFF", border: "1px solid #E2DDD6", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 1s ease-in-out" }}>
+            {done ? (
+              <span style={{ fontSize: "32px" }}>🎉</span>
+            ) : (
+              <div>
+                <p style={{ fontSize: "20px", fontWeight: 700, color: "#111111", fontFamily: font }}>{started ? phase : "Inhale"}</p>
+                {started && <p style={{ fontSize: "28px", fontWeight: 800, color: "#E8521A", fontFamily: font, marginTop: "4px" }}>{count}</p>}
+              </div>
+            )}
+          </div>
+        </div>
+        {started && <p style={{ fontSize: "13px", color: "#9ca3af", fontFamily: font, marginBottom: "8px" }}>Cycle {cycle + 1} of {TOTAL_CYCLES}</p>}
+        <p style={{ fontSize: "13px", color: "#6b7280", fontFamily: font, marginBottom: "24px" }}>{done ? "Well done! You completed 4 cycles." : "4-7-8 breathing technique"}</p>
+        <div style={{ display: "flex", justifyContent: "center", gap: "8px", marginBottom: "24px" }}>
+          {Array.from({ length: TOTAL_CYCLES }).map((_, i) => (
+            <div key={i} style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: i < (done ? TOTAL_CYCLES : cycle) ? "#E8521A" : "#E2DDD6", transition: "background-color 0.3s" }} />
+          ))}
+        </div>
+        {!started && !done && (
+          <button onClick={start} style={{ padding: "12px 40px", borderRadius: "100px", backgroundColor: "#E8521A", color: "#ffffff", fontWeight: 700, fontSize: "15px", fontFamily: font, border: "none", cursor: "pointer", boxShadow: "0 4px 16px rgba(232,82,26,0.35)" }}>Start</button>
+        )}
+        {done && (
+          <button onClick={onClose} style={{ padding: "12px 40px", borderRadius: "100px", backgroundColor: "#111111", color: "#ffffff", fontWeight: 700, fontSize: "15px", fontFamily: font, border: "none", cursor: "pointer" }}>Done</button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Challenge Action Plan ─────────────────────────────────────────────────────
+type ChallengeState = "idle" | "active" | "complete";
+
+function ChallengeActionPlan({
+  steps,
+  mood,
+  onSaveToSupabase,
+}: {
+  steps: string[];
+  mood: string;
+  onSaveToSupabase?: (mood: string, stepsCompleted: number) => Promise<void>;
+}) {
+  const router = useRouter();
+  const [state, setState]           = useState<ChallengeState>("idle");
+  const [currentStep, setCurrentStep] = useState(0);
+  const [saving, setSaving]         = useState(false);
+
+  const progress = state === "complete"
+    ? 100
+    : state === "active"
+    ? Math.round(((currentStep) / steps.length) * 100)
+    : 0;
+
+  const handleStart = () => {
+    setState("active");
+    setCurrentStep(0);
+  };
+
+  const handleMarkDone = async () => {
+    const next = currentStep + 1;
+    if (next >= steps.length) {
+      setState("complete");
+      // save to supabase
+      if (onSaveToSupabase) {
+        setSaving(true);
+        try { await onSaveToSupabase(mood, steps.length); } catch {}
+        setSaving(false);
+      }
+    } else {
+      setCurrentStep(next);
+    }
+  };
+
+  const handleMoreChallenges = () => {
+    // reload same page to get next challenge set (future: rotate sets)
+    setState("idle");
+    setCurrentStep(0);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleBackToLibrary = () => {
+    router.push("/dashboard/tips");
+  };
+
+  return (
+    <div
+      className="rounded-2xl p-6"
+      style={{ backgroundColor: "#FFFFFF", border: "1px solid #E2DDD6", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}
+    >
+      {/* Header row */}
+      <div className="flex items-center justify-between mb-2">
+        <p style={{ fontSize: "11px", fontWeight: 700, color: "#9ca3af", fontFamily: font, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+          Recommended Action Plan
+        </p>
+        {state === "active" && (
+          <p style={{ fontSize: "12px", color: "#9ca3af", fontFamily: font, fontWeight: 500 }}>
+            Step {currentStep + 1} of {steps.length}
+          </p>
+        )}
+        {state === "idle" && (
+          <p style={{ fontSize: "12px", color: "#9ca3af", fontFamily: font, fontWeight: 500 }}>
+            {steps.length} steps
+          </p>
+        )}
+        {state === "complete" && (
+          <p style={{ fontSize: "12px", color: "#22c55e", fontFamily: font, fontWeight: 600 }}>
+            Complete ✓
+          </p>
+        )}
+      </div>
+
+      {/* Progress bar */}
+      <div className="h-1.5 rounded-full overflow-hidden mb-6" style={{ backgroundColor: "#E2DDD6" }}>
+        <div
+          className="h-1.5 rounded-full transition-all duration-500"
+          style={{
+            width: `${progress}%`,
+            backgroundColor: state === "complete" ? "#22c55e" : "#E8521A",
+          }}
+        />
+      </div>
+
+      {/* ── STATE: idle — show start button ── */}
+      {state === "idle" && (
+        <div style={{ textAlign: "center", padding: "8px 0 4px" }}>
+          <p style={{ fontSize: "13px", color: "#9ca3af", fontFamily: font, lineHeight: 1.65, marginBottom: "20px", maxWidth: "340px", margin: "0 auto 20px" }}>
+            {steps.length} guided steps to help you today.<br />Complete one at a time, at your own pace.
+          </p>
+          <button
+            onClick={handleStart}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              background: "#1C3A2E",
+              color: "#F5F0E8",
+              border: "none",
+              borderRadius: "999px",
+              padding: "13px 28px",
+              fontSize: "14px",
+              fontWeight: 700,
+              fontFamily: font,
+              cursor: "pointer",
+              transition: "background 0.2s",
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = "#24503E")}
+            onMouseLeave={e => (e.currentTarget.style.background = "#1C3A2E")}
+          >
+            <Play size={14} fill="#F5F0E8" />
+            Start Today's Challenge
+          </button>
+        </div>
+      )}
+
+      {/* ── STATE: active — show one step at a time ── */}
+      {state === "active" && (
+        <div>
+          {/* Step indicator dots */}
+          <div style={{ display: "flex", gap: "6px", marginBottom: "20px" }}>
+            {steps.map((_, i) => (
+              <div
+                key={i}
+                style={{
+                  width: "8px",
+                  height: "8px",
+                  borderRadius: "50%",
+                  backgroundColor: i < currentStep ? "#1C3A2E" : i === currentStep ? "#E8521A" : "#E2DDD6",
+                  transition: "background-color 0.3s",
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Step label */}
+          <p style={{ fontSize: "11px", fontWeight: 700, color: "#E8521A", fontFamily: font, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "8px" }}>
+            Step {currentStep + 1} of {steps.length}
+          </p>
+
+          {/* Step text */}
+          <p style={{ fontSize: "16px", fontWeight: 600, color: "#111111", fontFamily: font, lineHeight: 1.55, marginBottom: "24px" }}>
+            {steps[currentStep]}
+          </p>
+
+          {/* Mark done button */}
+          <button
+            onClick={handleMarkDone}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              background: "#E8521A",
+              color: "#ffffff",
+              border: "none",
+              borderRadius: "999px",
+              padding: "12px 24px",
+              fontSize: "14px",
+              fontWeight: 700,
+              fontFamily: font,
+              cursor: "pointer",
+              transition: "background 0.2s",
+              boxShadow: "0 4px 16px rgba(232,82,26,0.25)",
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = "#D4480F")}
+            onMouseLeave={e => (e.currentTarget.style.background = "#E8521A")}
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M2 7l4 4 6-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            {currentStep === steps.length - 1 ? "Complete Challenge" : "Mark as Done"}
+          </button>
+        </div>
+      )}
+
+      {/* ── STATE: complete — celebration + CTAs ── */}
+      {state === "complete" && (
+        <div style={{ textAlign: "center", padding: "8px 0" }}>
+          <div style={{ fontSize: "40px", marginBottom: "12px" }}>🎉</div>
+          <p style={{ fontSize: "18px", fontWeight: 800, color: "#1C3A2E", fontFamily: font, marginBottom: "6px" }}>
+            Well done! Challenge complete.
+          </p>
+          <p style={{ fontSize: "13px", color: "#6b7280", fontFamily: font, lineHeight: 1.65, marginBottom: "24px" }}>
+            You completed all {steps.length} steps for today's {mood} challenge.
+            {saving ? " Saving your progress..." : ""}
+          </p>
+
+          {/* Divider */}
+          <div style={{ borderTop: "1px solid #E2DDD6", marginBottom: "20px" }} />
+
+          <p style={{ fontSize: "13px", fontWeight: 600, color: "#9ca3af", fontFamily: font, marginBottom: "14px" }}>
+            Do you want more challenges?
+          </p>
+
+          <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
+            <button
+              onClick={handleMoreChallenges}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                background: "#E8521A",
+                color: "#ffffff",
+                border: "none",
+                borderRadius: "999px",
+                padding: "12px 22px",
+                fontSize: "14px",
+                fontWeight: 700,
+                fontFamily: font,
+                cursor: "pointer",
+                boxShadow: "0 4px 16px rgba(232,82,26,0.25)",
+                transition: "background 0.2s",
+              }}
+              onMouseEnter={e => (e.currentTarget.style.background = "#D4480F")}
+              onMouseLeave={e => (e.currentTarget.style.background = "#E8521A")}
+            >
+              Yes, give me more
+            </button>
+            <button
+              onClick={handleBackToLibrary}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                background: "transparent",
+                color: "#6b7280",
+                border: "1.5px solid #E2DDD6",
+                borderRadius: "999px",
+                padding: "11px 20px",
+                fontSize: "13px",
+                fontWeight: 600,
+                fontFamily: font,
+                cursor: "pointer",
+                transition: "border-color 0.2s",
+              }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = "#9ca3af")}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = "#E2DDD6")}
+            >
+              Back to library
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Mood Content ──────────────────────────────────────────────────────────────
 const MOOD_CONTENT: Record<string, MoodContent> = {
   Anxiety: {
     story:
@@ -44,10 +399,26 @@ The practical steps that helped Sarah — morning breathing, written fear challe
 
 If you're in the thick of anxiety right now, the most important thing her story offers is proof that the fog lifts. Not all at once. But it lifts.`,
     tips: [
-      { title: "Box Breathing", description: "Inhale for 4 counts, hold for 4, exhale for 4, hold for 4. Repeat 4 times to calm your nervous system instantly." },
-      { title: "Name Your Fear", description: "Write down exactly what you're anxious about. Giving it a name reduces its power over your mind." },
-      { title: "Limit Caffeine", description: "Caffeine amplifies anxiety symptoms. Try switching to herbal tea in the afternoon and notice the difference." },
-      { title: "Progressive Muscle Relaxation", description: "Tense and release each muscle group from your feet upward to release physical tension stored in your body." },
+      {
+        title: "Box Breathing",
+        description: "Inhale for 4 counts, hold for 4, exhale for 4, hold for 4. Repeat 4 times to calm your nervous system instantly.",
+        action: { label: "Try the exercise", type: "breathing" },
+      },
+      {
+        title: "Name Your Fear",
+        description: "Write down exactly what you're anxious about. Giving it a name reduces its power over your mind.",
+        action: { label: "Write in Journal", type: "journal", href: "/dashboard/journal" },
+      },
+      {
+        title: "Limit Caffeine",
+        description: "Caffeine amplifies anxiety symptoms. Try switching to herbal tea in the afternoon and notice the difference.",
+        action: { label: "See herbal tea suggestions", type: "link", href: "/dashboard/tips/herbal-tea" },
+      },
+      {
+        title: "Progressive Muscle Relaxation",
+        description: "Tense and release each muscle group from your feet upward to release physical tension stored in your body.",
+        action: { label: "Watch tutorial", type: "video", href: "/dashboard/tips/pmr-tutorial" },
+      },
     ],
     actionPlan: [
       "Morning: 5-minute breathing exercise before checking your phone",
@@ -88,10 +459,26 @@ The other thing Marcus's story teaches is that shame is depression's accomplice.
 
 You don't need to be fixed to be helped. You just need to get to the end of the street.`,
     tips: [
-      { title: "Behavioral Activation", description: "Schedule one enjoyable or meaningful activity daily, even if small. Action comes before motivation, not after." },
-      { title: "Sunlight Exposure", description: "Get outside within an hour of waking. Natural light boosts serotonin and helps regulate your sleep-wake cycle." },
-      { title: "Reach Out to One Person", description: "Isolation worsens depression. Send one text or make one call — connection is medicine." },
-      { title: "Track Small Wins", description: "Write down 3 things you did today, no matter how minor. This trains your brain to notice progress." },
+      {
+        title: "Behavioral Activation",
+        description: "Schedule one enjoyable or meaningful activity daily, even if small. Action comes before motivation, not after.",
+        action: { label: "Write in Journal", type: "journal", href: "/dashboard/journal" },
+      },
+      {
+        title: "Sunlight Exposure",
+        description: "Get outside within an hour of waking. Natural light boosts serotonin and helps regulate your sleep-wake cycle.",
+        action: { label: "Watch tutorial", type: "video", href: "/dashboard/tips/sunlight-tutorial" },
+      },
+      {
+        title: "Reach Out to One Person",
+        description: "Isolation worsens depression. Send one text or make one call — connection is medicine.",
+        action: { label: "Write in Journal", type: "journal", href: "/dashboard/journal" },
+      },
+      {
+        title: "Track Small Wins",
+        description: "Write down 3 things you did today, no matter how minor. This trains your brain to notice progress.",
+        action: { label: "Write in Journal", type: "journal", href: "/dashboard/journal" },
+      },
     ],
     actionPlan: [
       "Morning: Get dressed and step outside for at least 10 minutes",
@@ -134,10 +521,26 @@ Her story teaches you that rest is not a reward for finishing. It's a prerequisi
 
 The invitation from Aisha's story is to find your 20 minutes. Not to optimize them. Not to make them productive. Just to let them belong to you.`,
     tips: [
-      { title: "The 2-Minute Rule", description: "If a task takes less than 2 minutes, do it now. Clearing small tasks reduces mental clutter significantly." },
-      { title: "Prioritize Ruthlessly", description: "List your tasks and mark only 3 as truly important today. Everything else is secondary." },
-      { title: "Body Scan Meditation", description: "Spend 5 minutes scanning your body from head to toe, noticing where you hold tension and consciously releasing it." },
-      { title: "Set a Worry Window", description: "Designate 15 minutes per day to worry. Outside that window, postpone stress thoughts until your next session." },
+      {
+        title: "The 2-Minute Rule",
+        description: "If a task takes less than 2 minutes, do it now. Clearing small tasks reduces mental clutter significantly.",
+        action: { label: "Write in Journal", type: "journal", href: "/dashboard/journal" },
+      },
+      {
+        title: "Prioritize Ruthlessly",
+        description: "List your tasks and mark only 3 as truly important today. Everything else is secondary.",
+        action: { label: "Write in Journal", type: "journal", href: "/dashboard/journal" },
+      },
+      {
+        title: "Body Scan Meditation",
+        description: "Spend 5 minutes scanning your body from head to toe, noticing where you hold tension and consciously releasing it.",
+        action: { label: "Watch tutorial", type: "video", href: "/dashboard/tips/body-scan-tutorial" },
+      },
+      {
+        title: "Set a Worry Window",
+        description: "Designate 15 minutes per day to worry. Outside that window, postpone stress thoughts until your next session.",
+        action: { label: "Write in Journal", type: "journal", href: "/dashboard/journal" },
+      },
     ],
     actionPlan: [
       "Morning: Write your top 3 priorities before opening any apps",
@@ -178,10 +581,26 @@ James didn't go to the garden to make friends. He went because it was Saturday a
 
 His story tells you: don't wait until you feel ready to connect. Show up somewhere, regularly, without an agenda. Let time do the rest.`,
     tips: [
-      { title: "Join a Group Activity", description: "Find a class, club, or volunteer group around an interest. Shared activities create natural conversation and connection." },
-      { title: "Deepen Existing Ties", description: "Reach out to someone you've lost touch with. A simple 'thinking of you' message can restart meaningful relationships." },
-      { title: "Be Present in Public", description: "Visit a café or park without headphones. Simply being open to the world around you invites small moments of connection." },
-      { title: "Practice Self-Compassion", description: "Loneliness often comes with shame. Remind yourself it's a universal human experience, not a personal failing." },
+      {
+        title: "Join a Group Activity",
+        description: "Find a class, club, or volunteer group around an interest. Shared activities create natural conversation and connection.",
+        action: { label: "Write in Journal", type: "journal", href: "/dashboard/journal" },
+      },
+      {
+        title: "Deepen Existing Ties",
+        description: "Reach out to someone you've lost touch with. A simple 'thinking of you' message can restart meaningful relationships.",
+        action: { label: "Write in Journal", type: "journal", href: "/dashboard/journal" },
+      },
+      {
+        title: "Be Present in Public",
+        description: "Visit a café or park without headphones. Simply being open to the world around you invites small moments of connection.",
+        action: { label: "Write in Journal", type: "journal", href: "/dashboard/journal" },
+      },
+      {
+        title: "Practice Self-Compassion",
+        description: "Loneliness often comes with shame. Remind yourself it's a universal human experience, not a personal failing.",
+        action: { label: "Write in Journal", type: "journal", href: "/dashboard/journal" },
+      },
     ],
     actionPlan: [
       "This week: Send one message to someone you haven't spoken to in a while",
@@ -222,10 +641,26 @@ His story also teaches something important about the body's role. Anger is physi
 
 Most importantly: David's daughter stopped flinching. That's the real measure. Anger managed well doesn't damage the people you love.`,
     tips: [
-      { title: "Spot the Physical Cues", description: "Notice where anger lives in your body — tight chest, clenched jaw, heat. Early awareness gives you time to respond instead of react." },
-      { title: "The 10-Second Pause", description: "Before responding when angry, count slowly to 10. This simple gap engages your rational brain and prevents regrettable reactions." },
-      { title: "Identify the Need", description: "Ask yourself: what boundary was crossed or what need isn't being met? Anger usually protects something important." },
-      { title: "Physical Release", description: "Exercise, punch a pillow, or go for a fast walk. Physical movement processes the adrenaline behind anger safely." },
+      {
+        title: "Spot the Physical Cues",
+        description: "Notice where anger lives in your body — tight chest, clenched jaw, heat. Early awareness gives you time to respond instead of react.",
+        action: { label: "Try breathing exercise", type: "breathing" },
+      },
+      {
+        title: "The 10-Second Pause",
+        description: "Before responding when angry, count slowly to 10. This simple gap engages your rational brain and prevents regrettable reactions.",
+        action: { label: "Try breathing exercise", type: "breathing" },
+      },
+      {
+        title: "Identify the Need",
+        description: "Ask yourself: what boundary was crossed or what need isn't being met? Anger usually protects something important.",
+        action: { label: "Write in Journal", type: "journal", href: "/dashboard/journal" },
+      },
+      {
+        title: "Physical Release",
+        description: "Exercise, punch a pillow, or go for a fast walk. Physical movement processes the adrenaline behind anger safely.",
+        action: { label: "Watch tutorial", type: "video", href: "/dashboard/tips/anger-release-tutorial" },
+      },
     ],
     actionPlan: [
       "Daily: Notice 3 moments when irritation starts and name the trigger",
@@ -264,10 +699,26 @@ What her story teaches you practically is the power of continuing bonds — the 
 
 If you're grieving, her story offers this: you don't have to choose between honoring your loss and continuing to live. Both are acts of love. Both are allowed.`,
     tips: [
-      { title: "Let Grief Move Through You", description: "Don't rush or suppress grief. Set aside time to feel it fully — cry, remember, honor. Suppression prolongs it." },
-      { title: "Create a Ritual", description: "Light a candle, visit a place, or write a letter on special dates. Rituals give grief a container and honor what was lost." },
-      { title: "Talk About Them", description: "Share memories of who or what you lost. Speaking their name keeps connection alive and eases the loneliness of grief." },
-      { title: "Be Patient With Yourself", description: "Grief can resurface for years. This isn't failure — it's love. Treat each wave with the same compassion you'd offer a friend." },
+      {
+        title: "Let Grief Move Through You",
+        description: "Don't rush or suppress grief. Set aside time to feel it fully — cry, remember, honor. Suppression prolongs it.",
+        action: { label: "Write in Journal", type: "journal", href: "/dashboard/journal" },
+      },
+      {
+        title: "Create a Ritual",
+        description: "Light a candle, visit a place, or write a letter on special dates. Rituals give grief a container and honor what was lost.",
+        action: { label: "Write in Journal", type: "journal", href: "/dashboard/journal" },
+      },
+      {
+        title: "Talk About Them",
+        description: "Share memories of who or what you lost. Speaking their name keeps connection alive and eases the loneliness of grief.",
+        action: { label: "Write in Journal", type: "journal", href: "/dashboard/journal" },
+      },
+      {
+        title: "Be Patient With Yourself",
+        description: "Grief can resurface for years. This isn't failure — it's love. Treat each wave with the same compassion you'd offer a friend.",
+        action: { label: "Write in Journal", type: "journal", href: "/dashboard/journal" },
+      },
     ],
     actionPlan: [
       "Daily: Allow yourself one moment to feel without judgment",
@@ -308,10 +759,26 @@ Her story also teaches the importance of systems-level change, not just individu
 
 What you can take from Priya is this: recovery requires permission. Permission to be unproductive. Permission to be a person, not a function. That permission may have to come from you first, before anyone else offers it.`,
     tips: [
-      { title: "Audit Your Energy Drains", description: "List everything draining you — tasks, people, habits. Identify what you can eliminate, delegate, or reduce right now." },
-      { title: "Protect Non-Negotiable Rest", description: "Block time in your calendar for rest the same way you schedule meetings. Rest is productive — it's where recovery happens." },
-      { title: "Reconnect With Joy", description: "Do one thing purely for enjoyment this week, with no productivity goal. Burnout disconnects you from what makes life worth living." },
-      { title: "Set Micro-Boundaries", description: "Start with one small boundary: no emails after 8pm, one lunch break per day. Small limits rebuild your sense of agency." },
+      {
+        title: "Audit Your Energy Drains",
+        description: "List everything draining you — tasks, people, habits. Identify what you can eliminate, delegate, or reduce right now.",
+        action: { label: "Write in Journal", type: "journal", href: "/dashboard/journal" },
+      },
+      {
+        title: "Protect Non-Negotiable Rest",
+        description: "Block time in your calendar for rest the same way you schedule meetings. Rest is productive — it's where recovery happens.",
+        action: { label: "Write in Journal", type: "journal", href: "/dashboard/journal" },
+      },
+      {
+        title: "Reconnect With Joy",
+        description: "Do one thing purely for enjoyment this week, with no productivity goal. Burnout disconnects you from what makes life worth living.",
+        action: { label: "Write in Journal", type: "journal", href: "/dashboard/journal" },
+      },
+      {
+        title: "Set Micro-Boundaries",
+        description: "Start with one small boundary: no emails after 8pm, one lunch break per day. Small limits rebuild your sense of agency.",
+        action: { label: "Write in Journal", type: "journal", href: "/dashboard/journal" },
+      },
     ],
     actionPlan: [
       "This week: Identify and remove or reduce your top energy drain",
@@ -352,10 +819,26 @@ Her story also teaches something important about the origin of the inner critic.
 
 You are not a project to be fixed. You are a person learning to see yourself more honestly. That process takes time, and it is worth every bit of it.`,
     tips: [
-      { title: "Challenge the Inner Critic", description: "When a self-critical thought appears, ask: 'Would I say this to a friend?' If not, rewrite it as you would for someone you love." },
-      { title: "Evidence Journal", description: "Write down 3 things you handled well each day. Over time, this builds an evidence base that contradicts the narrative of inadequacy." },
-      { title: "Stop Comparing Timelines", description: "Social comparison is self-esteem's enemy. Your path is your own. Unfollow accounts that make you feel lesser." },
-      { title: "Do Things You're Good At", description: "Regularly engaging in activities where you have competence rebuilds confidence through experience, not just affirmation." },
+      {
+        title: "Challenge the Inner Critic",
+        description: "When a self-critical thought appears, ask: 'Would I say this to a friend?' If not, rewrite it as you would for someone you love.",
+        action: { label: "Write in Journal", type: "journal", href: "/dashboard/journal" },
+      },
+      {
+        title: "Evidence Journal",
+        description: "Write down 3 things you handled well each day. Over time, this builds an evidence base that contradicts the narrative of inadequacy.",
+        action: { label: "Write in Journal", type: "journal", href: "/dashboard/journal" },
+      },
+      {
+        title: "Stop Comparing Timelines",
+        description: "Social comparison is self-esteem's enemy. Your path is your own. Unfollow accounts that make you feel lesser.",
+        action: { label: "Write in Journal", type: "journal", href: "/dashboard/journal" },
+      },
+      {
+        title: "Do Things You're Good At",
+        description: "Regularly engaging in activities where you have competence rebuilds confidence through experience, not just affirmation.",
+        action: { label: "Write in Journal", type: "journal", href: "/dashboard/journal" },
+      },
     ],
     actionPlan: [
       "Daily: Write 3 things you did well — however small",
@@ -400,10 +883,26 @@ The one-task rule he adopted isn't about productivity. It's about cognitive merc
 
 Tom's story tells you: the pile has edges. It is survivable. Start with the paper.`,
     tips: [
-      { title: "Brain Dump Everything", description: "Write every task, worry, and obligation on paper. Getting it out of your head and onto a page immediately reduces cognitive overwhelm." },
-      { title: "Pick Just One Thing", description: "From your list, choose the single most important or urgent item. Do only that until it's done or you've made meaningful progress." },
-      { title: "Time-Block Your Day", description: "Assign tasks to specific time slots rather than keeping a floating to-do list. Structure reduces the anxiety of 'I should be doing something.'" },
-      { title: "Say No to One Thing", description: "Overwhelm is often a capacity problem. Identify one commitment you can decline, postpone, or delegate this week." },
+      {
+        title: "Brain Dump Everything",
+        description: "Write every task, worry, and obligation on paper. Getting it out of your head and onto a page immediately reduces cognitive overwhelm.",
+        action: { label: "Write in Journal", type: "journal", href: "/dashboard/journal" },
+      },
+      {
+        title: "Pick Just One Thing",
+        description: "From your list, choose the single most important or urgent item. Do only that until it's done or you've made meaningful progress.",
+        action: { label: "Write in Journal", type: "journal", href: "/dashboard/journal" },
+      },
+      {
+        title: "Time-Block Your Day",
+        description: "Assign tasks to specific time slots rather than keeping a floating to-do list. Structure reduces the anxiety of 'I should be doing something.'",
+        action: { label: "Write in Journal", type: "journal", href: "/dashboard/journal" },
+      },
+      {
+        title: "Say No to One Thing",
+        description: "Overwhelm is often a capacity problem. Identify one commitment you can decline, postpone, or delegate this week.",
+        action: { label: "Write in Journal", type: "journal", href: "/dashboard/journal" },
+      },
     ],
     actionPlan: [
       "Morning: Brain dump everything on your mind before starting work",
@@ -414,17 +913,45 @@ Tom's story tells you: the pile has edges. It is survivable. Start with the pape
   },
 };
 
+// ─── Main Page ─────────────────────────────────────────────────────────────────
 export default function MoodTipsPage() {
-  const { mood } = useParams();
+  const { mood }    = useParams();
+  const router      = useRouter();
   const decodedMood = decodeURIComponent(mood as string);
-  const content = MOOD_CONTENT[decodedMood];
+  const content     = MOOD_CONTENT[decodedMood];
+
   const [storyExpanded, setStoryExpanded] = useState(false);
-  const [whyExpanded, setWhyExpanded] = useState(false);
+  const [whyExpanded,   setWhyExpanded]   = useState(false);
+  const [breathingOpen, setBreathingOpen] = useState(false);
+
+  const handleTipAction = (tip: MoodContent["tips"][0]) => {
+    if (!tip.action) return;
+    if (tip.action.type === "breathing") { setBreathingOpen(true); return; }
+    if (tip.action.href) router.push(tip.action.href);
+  };
+
+  // placeholder — wire up real Supabase call here
+  const handleSaveChallenge = async (mood: string, stepsCompleted: number) => {
+    try {
+      const { createClient } = await import("@/utils/supabase/client");
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      await supabase.from("challenge_completions").insert([{
+        user_id: user.id,
+        mood,
+        steps_completed: stepsCompleted,
+        completed_at: new Date().toISOString(),
+      }]);
+    } catch (err) {
+      console.error("Failed to save challenge:", err);
+    }
+  };
 
   if (!content) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-[var(--color-text-body)] opacity-50 text-sm">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#F5F0E8" }}>
+        <p style={{ fontSize: "15px", color: "#6b7280", fontFamily: font }}>
           No content found for "{decodedMood}".
         </p>
       </div>
@@ -432,132 +959,122 @@ export default function MoodTipsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-main)] p-6 md:p-10">
-      <div className="max-w-3xl mx-auto space-y-6">
+    <>
+      {breathingOpen && <BreathingModal onClose={() => setBreathingOpen(false)} />}
 
-        {/* Header */}
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-[var(--color-text-header)]">
-              {decodedMood} Support Guide
-            </h1>
-            <p className="text-[var(--color-text-body)] opacity-50 text-sm mt-1">
-              Personalized support, practical steps and gentle guidance.
+      <div className="min-h-screen p-6 md:p-10" style={{ backgroundColor: "#F5F0E8", fontFamily: font }}>
+        <div className="max-w-3xl mx-auto space-y-5">
+
+          {/* ── Header ── */}
+          <div className="flex items-start justify-between pb-5" style={{ borderBottom: "1px solid #E2DDD6" }}>
+            <div>
+              <h1 style={{ fontWeight: 800, fontSize: "22px", color: "#111111", fontFamily: font, letterSpacing: "-0.02em" }}>
+                {decodedMood} Support Guide
+              </h1>
+              <p style={{ color: "#6b7280", fontSize: "14px", fontFamily: font, fontWeight: 400, marginTop: "4px" }}>
+                Personalized support, practical steps and gentle guidance.
+              </p>
+            </div>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: "#EDE8DF", border: "1px solid #E2DDD6" }}>
+              <Lightbulb size={18} style={{ color: "#111111" }} />
+            </div>
+          </div>
+
+          {/* ── Story ── */}
+          <div className="rounded-2xl p-6" style={{ backgroundColor: "#FFFFFF", border: "1px solid #E2DDD6", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
+            <div className="flex items-center gap-2 mb-4">
+              <BookOpen size={14} style={{ color: "#9ca3af" }} />
+              <p style={{ fontSize: "11px", fontWeight: 700, color: "#9ca3af", fontFamily: font, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                A Short Story
+              </p>
+            </div>
+            {!storyExpanded ? (
+              <>
+                <p style={{ fontSize: "15px", fontWeight: 400, color: "#444444", fontFamily: font, lineHeight: 1.8 }}>{content.story}</p>
+                <button onClick={() => setStoryExpanded(true)} className="mt-4 flex items-center gap-1.5" style={{ fontSize: "13px", fontWeight: 600, color: "#E8521A", fontFamily: font, background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                  onMouseEnter={e => (e.currentTarget.style.opacity = "0.7")}
+                  onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
+                >
+                  Read full story <ChevronDown size={14} />
+                </button>
+              </>
+            ) : (
+              <>
+                {content.storyFull.split("\n\n").map((p, i) => (
+                  <p key={i} style={{ fontSize: "15px", fontWeight: 400, color: "#444444", fontFamily: font, lineHeight: 1.8, marginBottom: "16px" }}>{p}</p>
+                ))}
+                <button onClick={() => setStoryExpanded(false)} style={{ fontSize: "13px", fontWeight: 600, color: "#E8521A", fontFamily: font, background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", gap: "6px" }}>
+                  <ChevronUp size={14} /> Show less
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* ── Why It Helps ── */}
+          <div className="rounded-2xl p-6" style={{ backgroundColor: "#FFFFFF", border: "1px solid #E2DDD6", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
+            <p style={{ fontSize: "11px", fontWeight: 700, color: "#9ca3af", fontFamily: font, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "16px" }}>
+              Why This Helps
             </p>
+            {!whyExpanded ? (
+              <>
+                <p style={{ fontSize: "15px", fontWeight: 400, color: "#444444", fontFamily: font, lineHeight: 1.8 }}>{content.whyItHelps}</p>
+                <button onClick={() => setWhyExpanded(true)} style={{ fontSize: "13px", fontWeight: 600, color: "#E8521A", fontFamily: font, background: "none", border: "none", cursor: "pointer", padding: 0, marginTop: "16px", display: "flex", alignItems: "center", gap: "6px" }}>
+                  Read more <ChevronDown size={14} />
+                </button>
+              </>
+            ) : (
+              <>
+                {content.whyItHelpsFull.split("\n\n").map((p, i) => (
+                  <p key={i} style={{ fontSize: "15px", fontWeight: 400, color: "#444444", fontFamily: font, lineHeight: 1.8, marginBottom: "16px" }}>{p}</p>
+                ))}
+                <button onClick={() => setWhyExpanded(false)} style={{ fontSize: "13px", fontWeight: 600, color: "#E8521A", fontFamily: font, background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", gap: "6px" }}>
+                  <ChevronUp size={14} /> Show less
+                </button>
+              </>
+            )}
           </div>
-          <div className="w-10 h-10 rounded-xl bg-[var(--color-bg-card)] border border-[var(--color-border)] flex items-center justify-center shrink-0">
-            <Lightbulb size={18} className="text-[var(--color-text-header)]" />
-          </div>
-        </div>
 
-        {/* Story */}
-        <div className="p-6 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl">
-          <h2 className="text-xs font-semibold text-[var(--color-text-body)] opacity-40 uppercase tracking-widest mb-4">
-            A Short Story
-          </h2>
-          {!storyExpanded ? (
-            <>
-              <p className="text-sm text-[var(--color-text-body)] opacity-70 leading-relaxed">
-                {content.story}
-              </p>
-              <button
-                onClick={() => setStoryExpanded(true)}
-                className="mt-4 text-xs font-medium text-[var(--color-text-header)] opacity-50 hover:opacity-100 transition"
-              >
-                Read full story →
-              </button>
-            </>
-          ) : (
-            <>
-              {content.storyFull.split("\n\n").map((paragraph, i) => (
-                <p key={i} className="text-sm text-[var(--color-text-body)] opacity-70 leading-relaxed mb-4">
-                  {paragraph}
-                </p>
+          {/* ── Practical Tips ── */}
+          <div>
+            <p style={{ fontSize: "11px", fontWeight: 700, color: "#9ca3af", fontFamily: font, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "12px" }}>
+              Practical Tips
+            </p>
+            <div className="space-y-3">
+              {content.tips.map((tip, index) => (
+                <div key={index} className="p-5 rounded-2xl" style={{ backgroundColor: "#FFFFFF", border: "1px solid #E2DDD6", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
+                  <div className="flex items-start gap-3">
+                    <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs shrink-0 mt-0.5" style={{ backgroundColor: "#F5F0E8", border: "1px solid #E2DDD6", fontWeight: 700, color: "#E8521A", fontFamily: font }}>
+                      {index + 1}
+                    </div>
+                    <div className="flex-1">
+                      <h3 style={{ fontWeight: 700, fontSize: "15px", color: "#111111", fontFamily: font, marginBottom: "4px" }}>{tip.title}</h3>
+                      <p style={{ fontSize: "15px", fontWeight: 400, color: "#444444", fontFamily: font, lineHeight: 1.75 }}>{tip.description}</p>
+                      {tip.action && (
+                        <button
+                          onClick={() => handleTipAction(tip)}
+                          style={{ fontSize: "13px", fontWeight: 600, color: "#E8521A", fontFamily: font, background: "none", border: "none", cursor: "pointer", padding: 0, marginTop: "12px", display: "flex", alignItems: "center", gap: "4px" }}
+                          onMouseEnter={e => (e.currentTarget.style.opacity = "0.7")}
+                          onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
+                        >
+                          {tip.action.label} →
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
               ))}
-              <button
-                onClick={() => setStoryExpanded(false)}
-                className="mt-2 text-xs font-medium text-[var(--color-text-header)] opacity-50 hover:opacity-100 transition"
-              >
-                ← Show less
-              </button>
-            </>
-          )}
-        </div>
-
-        {/* Why It Helps */}
-        <div className="p-6 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl">
-          <h2 className="text-xs font-semibold text-[var(--color-text-body)] opacity-40 uppercase tracking-widest mb-4">
-            Why This Helps
-          </h2>
-          {!whyExpanded ? (
-            <>
-              <p className="text-sm text-[var(--color-text-body)] opacity-70 leading-relaxed">
-                {content.whyItHelps}
-              </p>
-              <button
-                onClick={() => setWhyExpanded(true)}
-                className="mt-4 text-xs font-medium text-[var(--color-text-header)] opacity-50 hover:opacity-100 transition"
-              >
-                Read more →
-              </button>
-            </>
-          ) : (
-            <>
-              {content.whyItHelpsFull.split("\n\n").map((paragraph, i) => (
-                <p key={i} className="text-sm text-[var(--color-text-body)] opacity-70 leading-relaxed mb-4">
-                  {paragraph}
-                </p>
-              ))}
-              <button
-                onClick={() => setWhyExpanded(false)}
-                className="mt-2 text-xs font-medium text-[var(--color-text-header)] opacity-50 hover:opacity-100 transition"
-              >
-                ← Show less
-              </button>
-            </>
-          )}
-        </div>
-
-        {/* Tips */}
-        <div>
-          <h2 className="text-xs font-semibold text-[var(--color-text-body)] opacity-40 uppercase tracking-widest mb-4">
-            Practical Tips
-          </h2>
-          <div className="space-y-3">
-            {content.tips.map((tip, index) => (
-              <div
-                key={index}
-                className="p-5 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl"
-              >
-                <h3 className="text-sm font-semibold text-[var(--color-text-header)] mb-2">
-                  {tip.title}
-                </h3>
-                <p className="text-sm text-[var(--color-text-body)] opacity-60 leading-relaxed">
-                  {tip.description}
-                </p>
-              </div>
-            ))}
+            </div>
           </div>
-        </div>
 
-        {/* Action Plan */}
-        <div className="p-6 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl">
-          <h2 className="text-xs font-semibold text-[var(--color-text-body)] opacity-40 uppercase tracking-widest mb-4">
-            Recommended Action Plan
-          </h2>
-          <ul className="space-y-3">
-            {content.actionPlan.map((step, index) => (
-              <li key={index} className="flex items-start gap-3 text-sm text-[var(--color-text-body)] opacity-70">
-                <span className="w-5 h-5 rounded-full bg-[var(--color-bg-main)] border border-[var(--color-border)] flex items-center justify-center text-xs text-[var(--color-text-header)] shrink-0 mt-0.5 font-medium">
-                  {index + 1}
-                </span>
-                {step}
-              </li>
-            ))}
-          </ul>
-        </div>
+          {/* ── Challenge Action Plan (replaces old checklist) ── */}
+          <ChallengeActionPlan
+            steps={content.actionPlan}
+            mood={decodedMood}
+            onSaveToSupabase={handleSaveChallenge}
+          />
 
+        </div>
       </div>
-    </div>
+    </>
   );
 }

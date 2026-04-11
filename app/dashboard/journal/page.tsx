@@ -127,7 +127,10 @@ export default function JournalPage() {
       <div className="max-w-2xl mx-auto">
 
         {/* ── Page Header ── */}
-        <div className="flex items-center justify-between mb-8 pb-5" style={{ borderBottom: "1px solid #E2DDD6" }}>
+        <div
+          className="flex items-center justify-between mb-8 pb-5"
+          style={{ borderBottom: "1px solid #E2DDD6" }}
+        >
           <div>
             <h1 style={{ fontWeight: 800, fontSize: "22px", color: "#111111", fontFamily: font, letterSpacing: "-0.02em" }}>
               My Journal
@@ -144,10 +147,14 @@ export default function JournalPage() {
           </div>
         </div>
 
-        {/* ── New Entry Box — X/Twitter composer style ── */}
+        {/* ── Composer box — white ── */}
         <div
           className="mb-6 rounded-2xl p-5 space-y-4"
-          style={{ backgroundColor: "#EDE8DF", border: "1px solid #E2DDD6" }}
+          style={{
+            backgroundColor: "#FFFFFF",
+            border: "1px solid #E2DDD6",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+          }}
         >
           <p style={{ fontSize: "11px", fontWeight: 700, color: "#9ca3af", fontFamily: font, letterSpacing: "0.08em", textTransform: "uppercase" }}>
             New Entry
@@ -212,9 +219,9 @@ export default function JournalPage() {
         </div>
 
         {/* ── Divider ── */}
-        <div style={{ borderBottom: "1px solid #E2DDD6", marginBottom: "0" }} />
+        <div style={{ borderBottom: "1px solid #E2DDD6" }} />
 
-        {/* ── Entries — X/Twitter feed style ── */}
+        {/* ── Feed ── */}
         <div>
           {entries.length === 0 && (
             <div className="text-center py-20">
@@ -240,10 +247,14 @@ export default function JournalPage() {
             >
               {editingId === entry.id ? (
 
-                /* ── Edit Mode ── */
+                /* ── Edit Mode — white card ── */
                 <div
                   className="rounded-2xl p-5 space-y-3"
-                  style={{ backgroundColor: "#EDE8DF", border: "1px solid #E2DDD6" }}
+                  style={{
+                    backgroundColor: "#FFFFFF",
+                    border: "1px solid #E2DDD6",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                  }}
                 >
                   <input
                     value={editTitle}
@@ -298,7 +309,7 @@ export default function JournalPage() {
                 /* ── View Mode — feed row ── */
                 <div className="flex gap-4">
 
-                  {/* Avatar dot — like X profile pic */}
+                  {/* Avatar */}
                   <div
                     className="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center text-sm mt-0.5"
                     style={{ backgroundColor: "#E8521A", color: "#ffffff", fontWeight: 700, fontFamily: font }}
@@ -308,7 +319,7 @@ export default function JournalPage() {
 
                   <div className="flex-1 min-w-0">
 
-                    {/* Top row: title + timestamp + actions */}
+                    {/* Title + mood + time + actions */}
                     <div className="flex items-start justify-between gap-2 mb-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span style={{ fontWeight: 700, fontSize: "15px", color: "#111111", fontFamily: font }}>
@@ -327,7 +338,6 @@ export default function JournalPage() {
                         </span>
                       </div>
 
-                      {/* Action buttons */}
                       <div className="flex items-center gap-0.5 shrink-0">
                         <button
                           onClick={() => startEdit(entry)}
@@ -352,7 +362,7 @@ export default function JournalPage() {
                       </div>
                     </div>
 
-                    {/* Entry content */}
+                    {/* Content */}
                     <p
                       className="whitespace-pre-wrap"
                       style={{ fontSize: "15px", fontWeight: 400, color: "#222222", fontFamily: font, lineHeight: 1.7 }}
@@ -360,11 +370,8 @@ export default function JournalPage() {
                       {entry.content}
                     </p>
 
-                    {/* Full date below */}
-                    <p
-                      className="mt-2"
-                      style={{ fontSize: "12px", color: "#9ca3af", fontFamily: font }}
-                    >
+                    {/* Date */}
+                    <p className="mt-2" style={{ fontSize: "12px", color: "#9ca3af", fontFamily: font }}>
                       {new Date(entry.created_at).toLocaleDateString("en-US", {
                         weekday: "short", month: "short", day: "numeric",
                       })} at {new Date(entry.created_at).toLocaleTimeString("en-US", {

@@ -46,7 +46,6 @@ const immediateHelp: ImmediateHelp[] = [
   { icon: Wind,  title: "Guided Exercises",    description: "5-minute calming activities",   action: "exercises" },
 ];
 
-/* ── Modal wrapper ── */
 function ModalOverlay({ onClose, title, children }: { onClose: () => void; title: string; children: React.ReactNode }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
@@ -69,7 +68,6 @@ function ModalOverlay({ onClose, title, children }: { onClose: () => void; title
   );
 }
 
-/* ── Breathing modal ── */
 function BreathingModal({ onClose }: { onClose: () => void }) {
   const [phase, setPhase]     = useState<"inhale" | "hold" | "exhale">("inhale");
   const [running, setRunning] = useState(false);
@@ -119,7 +117,6 @@ function BreathingModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-/* ── Journal modal ── */
 function JournalModal({ onClose, condition }: { onClose: () => void; condition: string }) {
   const supabase = createClient();
   const [entry, setEntry]   = useState("");
@@ -178,7 +175,6 @@ function JournalModal({ onClose, condition }: { onClose: () => void; condition: 
   );
 }
 
-/* ── Light therapy modal ── */
 function LightTherapyModal({ onClose }: { onClose: () => void }) {
   const [active, setActive] = useState(false);
   return (
@@ -207,14 +203,13 @@ function LightTherapyModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-/* ── Playlist modal ── */
 function PlaylistModal({ onClose }: { onClose: () => void }) {
   const tracks = [
-    { title: "Weightless",          artist: "Marconi Union",    duration: "8:09" },
-    { title: "Clair de Lune",       artist: "Debussy",          duration: "5:01" },
-    { title: "Sunset Lover",        artist: "Petit Biscuit",    duration: "4:23" },
-    { title: "Experience",          artist: "Ludovico Einaudi", duration: "5:15" },
-    { title: "River Flows in You",  artist: "Yiruma",           duration: "3:51" },
+    { title: "Weightless",         artist: "Marconi Union",    duration: "8:09" },
+    { title: "Clair de Lune",      artist: "Debussy",          duration: "5:01" },
+    { title: "Sunset Lover",       artist: "Petit Biscuit",    duration: "4:23" },
+    { title: "Experience",         artist: "Ludovico Einaudi", duration: "5:15" },
+    { title: "River Flows in You", artist: "Yiruma",           duration: "3:51" },
   ];
   const [playing, setPlaying] = useState<number | null>(null);
 
@@ -227,7 +222,7 @@ function PlaylistModal({ onClose }: { onClose: () => void }) {
             onClick={() => setPlaying(playing === i ? null : i)}
             className="flex items-center gap-3 p-3 rounded-xl border transition text-left"
             style={{
-              borderColor: playing === i ? "#111111" : "transparent",
+              borderColor:     playing === i ? "#111111" : "transparent",
               backgroundColor: playing === i ? "#F5F0E8" : "transparent",
             }}
             onMouseEnter={e => { if (playing !== i) e.currentTarget.style.backgroundColor = "#F5F0E8"; }}
@@ -251,7 +246,6 @@ function PlaylistModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-/* ── Main page ── */
 export default function ConditionPage() {
   const { condition } = useParams();
   const router = useRouter();
@@ -291,7 +285,7 @@ export default function ConditionPage() {
   };
 
   const handleImmediateHelp = (action?: string) => {
-    if (action === "chat")      setShowChatbot(true);
+    if (action === "chat")           setShowChatbot(true);
     else if (action === "community") router.push("/dashboard/community");
     else if (action === "exercises") setActiveModal("breathing");
   };
@@ -310,12 +304,13 @@ export default function ConditionPage() {
               You're not alone. Here are tools and coping strategies that may help.
             </p>
           </div>
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: "#EDE8DF", border: "1px solid #E2DDD6" }}>
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+            style={{ backgroundColor: "#EDE8DF", border: "1px solid #E2DDD6" }}>
             <Brain size={18} style={{ color: "#111111" }} />
           </div>
         </div>
 
-        {/* ── Helpful Tools ── */}
+        {/* ── Helpful Tools — white cards ── */}
         <div className="mb-8">
           <h2 style={{ fontSize: "11px", fontWeight: 700, color: "#9ca3af", fontFamily: font, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "16px" }}>
             Helpful Tools
@@ -325,17 +320,22 @@ export default function ConditionPage() {
               <button
                 key={index}
                 onClick={() => handleImmediateHelp(item.action)}
-                className="flex items-center gap-3 p-4 rounded-2xl text-left transition group"
-                style={{ backgroundColor: "#EDE8DF", border: "1px solid #E2DDD6" }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = "#111111"; e.currentTarget.style.backgroundColor = "#E6E0D5"; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = "#E2DDD6"; e.currentTarget.style.backgroundColor = "#EDE8DF"; }}
+                className="flex items-center gap-3 p-4 rounded-2xl text-left transition"
+                style={{ backgroundColor: "#FFFFFF", border: "1px solid #E2DDD6", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = "#111111"; e.currentTarget.style.backgroundColor = "#fafafa"; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = "#E2DDD6"; e.currentTarget.style.backgroundColor = "#FFFFFF"; }}
               >
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: "#F5F0E8", border: "1px solid #E2DDD6" }}>
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                  style={{ backgroundColor: "#F5F0E8", border: "1px solid #E2DDD6" }}>
                   <item.icon size={17} style={{ color: "#444444" }} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p style={{ fontWeight: 700, fontSize: "14px", color: "#111111", fontFamily: font }} className="truncate">{item.title}</p>
-                  <p style={{ fontSize: "12px", color: "#6b7280", fontFamily: font }} className="truncate">{item.description}</p>
+                  <p style={{ fontWeight: 700, fontSize: "14px", color: "#111111", fontFamily: font }} className="truncate">
+                    {item.title}
+                  </p>
+                  <p style={{ fontSize: "12px", color: "#6b7280", fontFamily: font }} className="truncate">
+                    {item.description}
+                  </p>
                 </div>
                 <ChevronRight size={13} style={{ color: "#9ca3af" }} className="ml-auto shrink-0" />
               </button>
@@ -343,21 +343,30 @@ export default function ConditionPage() {
           </div>
         </div>
 
-        {/* ── Coping Strategies ── */}
+        {/* ── Coping Strategies — white cards ── */}
         <div className="mb-8">
           <h2 style={{ fontSize: "11px", fontWeight: 700, color: "#9ca3af", fontFamily: font, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "16px" }}>
             Coping Strategies
           </h2>
           <div className="grid gap-3 md:grid-cols-2">
             {copingStrategies.map((strategy, index) => (
-              <div key={index} className="p-5 rounded-2xl" style={{ backgroundColor: "#EDE8DF", border: "1px solid #E2DDD6" }}>
+              <div
+                key={index}
+                className="p-5 rounded-2xl"
+                style={{ backgroundColor: "#FFFFFF", border: "1px solid #E2DDD6", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}
+              >
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: "#F5F0E8", border: "1px solid #E2DDD6" }}>
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                    style={{ backgroundColor: "#F5F0E8", border: "1px solid #E2DDD6" }}>
                     <strategy.icon size={17} style={{ color: "#444444" }} />
                   </div>
                   <div>
-                    <p style={{ fontWeight: 700, fontSize: "15px", color: "#111111", fontFamily: font }}>{strategy.title}</p>
-                    <p style={{ fontSize: "12px", color: "#9ca3af", fontFamily: font }}>{strategy.time}</p>
+                    <p style={{ fontWeight: 700, fontSize: "15px", color: "#111111", fontFamily: font }}>
+                      {strategy.title}
+                    </p>
+                    <p style={{ fontSize: "12px", color: "#9ca3af", fontFamily: font }}>
+                      {strategy.time}
+                    </p>
                   </div>
                 </div>
                 <p style={{ fontSize: "15px", fontWeight: 400, color: "#444444", fontFamily: font, lineHeight: 1.75, marginBottom: "16px" }}>
@@ -377,7 +386,7 @@ export default function ConditionPage() {
           </div>
         </div>
 
-        {/* ── Disclaimer ── */}
+        {/* ── Disclaimer — stays beige ── */}
         <div className="rounded-2xl px-5 py-4" style={{ backgroundColor: "#EDE8DF", border: "1px solid #E2DDD6" }}>
           <p style={{ fontSize: "13px", color: "#6b7280", fontFamily: font, fontWeight: 400, textAlign: "center", lineHeight: 1.7 }}>
             ⚠️ MyMood is for self-reflection and wellness only. For serious medical concerns,
@@ -399,17 +408,18 @@ export default function ConditionPage() {
           className="fixed bottom-4 right-4 w-[340px] sm:w-[380px] h-[520px] flex flex-col z-40 overflow-hidden rounded-2xl"
           style={{ backgroundColor: "#FFFFFF", border: "1px solid #E2DDD6", boxShadow: "0 8px 32px rgba(0,0,0,0.12)" }}
         >
-          {/* Chat Header */}
           <div
             className="px-4 py-3 flex items-center justify-between shrink-0"
             style={{ backgroundColor: "#F5F0E8", borderBottom: "1px solid #E2DDD6" }}
           >
             <div className="flex items-center gap-2.5">
               <div className="relative">
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: "#EDE8DF", border: "1px solid #E2DDD6" }}>
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
+                  style={{ backgroundColor: "#EDE8DF", border: "1px solid #E2DDD6" }}>
                   <Bot size={15} style={{ color: "#111111" }} />
                 </div>
-                <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full border" style={{ backgroundColor: "#22c55e", borderColor: "#F5F0E8" }} />
+                <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full border"
+                  style={{ backgroundColor: "#22c55e", borderColor: "#F5F0E8" }} />
               </div>
               <div>
                 <p style={{ fontSize: "14px", fontWeight: 700, color: "#111111", fontFamily: font }}>AI Support</p>
@@ -427,12 +437,12 @@ export default function ConditionPage() {
             </button>
           </div>
 
-          {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {chatMessages.map((msg, i) => (
               <div key={i} className={`flex items-end gap-2 ${msg.type === "user" ? "flex-row-reverse" : "flex-row"}`}>
                 {msg.type === "bot" && (
-                  <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: "#EDE8DF", border: "1px solid #E2DDD6" }}>
+                  <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0"
+                    style={{ backgroundColor: "#EDE8DF", border: "1px solid #E2DDD6" }}>
                     <Bot size={11} style={{ color: "#111111" }} />
                   </div>
                 )}
@@ -456,9 +466,9 @@ export default function ConditionPage() {
             ))}
           </div>
 
-          {/* Input */}
           <div className="p-3 shrink-0" style={{ borderTop: "1px solid #E2DDD6" }}>
-            <div className="flex items-center gap-2 rounded-xl px-3 py-2" style={{ backgroundColor: "#F5F0E8", border: "1px solid #E2DDD6" }}>
+            <div className="flex items-center gap-2 rounded-xl px-3 py-2"
+              style={{ backgroundColor: "#F5F0E8", border: "1px solid #E2DDD6" }}>
               <input
                 className="flex-1 min-w-0 bg-transparent outline-none"
                 value={inputMessage}

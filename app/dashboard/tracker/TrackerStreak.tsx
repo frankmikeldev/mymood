@@ -1,5 +1,7 @@
 "use client";
 
+const font = "'Manrope', sans-serif";
+
 export default function TrackerStreak({ entries }: { entries: any[] }) {
   if (!entries.length) return null;
 
@@ -17,8 +19,8 @@ export default function TrackerStreak({ entries }: { entries: any[] }) {
   }
 
   const totalEntries = entries.length;
-  const avgMood = (entries.reduce((acc, e) => acc + e.mood, 0) / totalEntries).toFixed(1);
-  const lastLog = uniqueDays[0].toLocaleDateString("en-US", {
+  const avgMood      = (entries.reduce((acc, e) => acc + e.mood, 0) / totalEntries).toFixed(1);
+  const lastLog      = uniqueDays[0].toLocaleDateString("en-US", {
     weekday: "short", month: "short", day: "numeric",
   });
 
@@ -28,35 +30,47 @@ export default function TrackerStreak({ entries }: { entries: any[] }) {
     "Every day counts. Keep going.";
 
   return (
-    <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl p-6">
+    <div
+      className="rounded-2xl p-6"
+      style={{ backgroundColor: "#FFFFFF", border: "1px solid #E2DDD6", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}
+    >
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h3 className="text-xs font-semibold text-[var(--color-text-body)] opacity-40 uppercase tracking-widest">
+          <p style={{ fontSize: "11px", fontWeight: 700, color: "#9ca3af", fontFamily: font, letterSpacing: "0.08em", textTransform: "uppercase" }}>
             Your Progress
-          </h3>
-          <p className="text-sm text-[var(--color-text-body)] opacity-60 mt-1">{streakMessage}</p>
+          </p>
+          <p style={{ fontSize: "14px", color: "#6b7280", fontFamily: font, fontWeight: 400, marginTop: "4px" }}>
+            {streakMessage}
+          </p>
         </div>
         <span className="text-2xl">🔥</span>
       </div>
 
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label: "Day Streak", value: `${streak}🔥`, sub: "consecutive days" },
-          { label: "Total Logs", value: totalEntries, sub: "all time" },
-          { label: "Avg Mood", value: `${avgMood}/5`, sub: "last 30 entries" },
+          { label: "Day Streak", value: `${streak}🔥`, sub: "consecutive days"  },
+          { label: "Total Logs", value: totalEntries,   sub: "all time"           },
+          { label: "Avg Mood",   value: `${avgMood}/5`, sub: "last 30 entries"   },
         ].map((stat) => (
           <div
             key={stat.label}
-            className="bg-[var(--color-bg-main)] border border-[var(--color-border)] rounded-xl p-3 text-center"
+            className="rounded-xl p-3 text-center"
+            style={{ backgroundColor: "#F5F0E8", border: "1px solid #E2DDD6" }}
           >
-            <p className="text-xl font-bold text-[var(--color-text-header)]">{stat.value}</p>
-            <p className="text-xs font-medium text-[var(--color-text-body)] opacity-60 mt-1">{stat.label}</p>
-            <p className="text-xs text-[var(--color-text-body)] opacity-30">{stat.sub}</p>
+            <p style={{ fontWeight: 800, fontSize: "20px", color: "#111111", fontFamily: font }}>
+              {stat.value}
+            </p>
+            <p style={{ fontSize: "12px", fontWeight: 600, color: "#444444", fontFamily: font, marginTop: "4px" }}>
+              {stat.label}
+            </p>
+            <p style={{ fontSize: "11px", color: "#9ca3af", fontFamily: font }}>
+              {stat.sub}
+            </p>
           </div>
         ))}
       </div>
 
-      <p className="text-xs text-[var(--color-text-body)] opacity-30 mt-4 text-right">
+      <p style={{ fontSize: "11px", color: "#9ca3af", fontFamily: font, marginTop: "16px", textAlign: "right" }}>
         Last logged: {lastLog}
       </p>
     </div>

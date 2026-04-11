@@ -4,31 +4,44 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import {
   User, Bell, Shield, Palette,
-  LogOut, Trash2, Check, ChevronRight, Moon, Sun, Settings,
+  LogOut, Trash2, Check, ChevronRight, Settings,
 } from "lucide-react";
 
 const supabase = createClient();
+const font = "'Manrope', sans-serif";
 
 type Section = "profile" | "notifications" | "appearance" | "privacy" | "account";
 
-export default function SettingsPage() {
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [activeSection, setActiveSection] = useState<Section>("profile");
-  const [userEmail, setUserEmail] = useState("");
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "12px 16px",
+  borderRadius: "12px",
+  border: "1px solid #E2DDD6",
+  backgroundColor: "#F5F0E8",
+  fontSize: "15px",
+  fontFamily: font,
+  fontWeight: 400,
+  color: "#111111",
+  outline: "none",
+  transition: "border-color 0.2s",
+};
 
-  const [name, setName] = useState("");
-  const [username, setUsername] = useState("");
-  const [bio, setBio] = useState("");
+export default function SettingsPage() {
+  const [loading, setLoading]           = useState(true);
+  const [saving, setSaving]             = useState(false);
+  const [saved, setSaved]               = useState(false);
+  const [activeSection, setActiveSection] = useState<Section>("profile");
+  const [userEmail, setUserEmail]       = useState("");
+  const [name, setName]                 = useState("");
+  const [username, setUsername]         = useState("");
+  const [bio, setBio]                   = useState("");
   const [notifications, setNotifications] = useState(true);
   const [reminderTime, setReminderTime] = useState("20:00");
-  const [emailNotifs, setEmailNotifs] = useState(false);
+  const [emailNotifs, setEmailNotifs]   = useState(false);
   const [weeklyReport, setWeeklyReport] = useState(true);
-  const [theme, setTheme] = useState("dark");
-  const [language, setLanguage] = useState("en");
+  const [language, setLanguage]         = useState("en");
   const [anonymousPosts, setAnonymousPosts] = useState(true);
-  const [shareData, setShareData] = useState(false);
+  const [shareData, setShareData]       = useState(false);
 
   useEffect(() => { loadSettings(); }, []);
 
@@ -45,7 +58,6 @@ export default function SettingsPage() {
       setReminderTime(data.reminder_time || "20:00");
       setEmailNotifs(data.email_notifs ?? false);
       setWeeklyReport(data.weekly_report ?? true);
-      setTheme(data.theme || "dark");
       setLanguage(data.language || "en");
       setAnonymousPosts(data.anonymous_posts ?? true);
       setShareData(data.share_data ?? false);
@@ -60,7 +72,7 @@ export default function SettingsPage() {
     await supabase.from("user_profiles").upsert({
       id: user.id, name, username, bio, notifications,
       reminder_time: reminderTime, email_notifs: emailNotifs,
-      weekly_report: weeklyReport, theme, language,
+      weekly_report: weeklyReport, language,
       anonymous_posts: anonymousPosts, share_data: shareData,
       updated_at: new Date().toISOString(),
     });
@@ -84,34 +96,42 @@ export default function SettingsPage() {
   }
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg-main)]">
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#F5F0E8" }}>
       <div className="flex flex-col items-center gap-3">
-        <div className="w-8 h-8 rounded-full border-2 border-[var(--color-text-header)] border-t-transparent animate-spin opacity-40" />
-        <p className="text-sm text-[var(--color-text-body)] opacity-40">Loading settings...</p>
+        <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "#E2DDD6", borderTopColor: "transparent" }} />
+        <p style={{ fontSize: "14px", color: "#6b7280", fontFamily: font }}>Loading settings...</p>
       </div>
     </div>
   );
 
   const navItems: { id: Section; icon: React.ElementType; label: string }[] = [
-    { id: "profile", icon: User, label: "Profile" },
-    { id: "notifications", icon: Bell, label: "Notifications" },
-    { id: "appearance", icon: Palette, label: "Appearance" },
-    { id: "privacy", icon: Shield, label: "Privacy & Data" },
-    { id: "account", icon: LogOut, label: "Account" },
+    { id: "profile",       icon: User,    label: "Profile"       },
+    { id: "notifications", icon: Bell,    label: "Notifications" },
+    { id: "appearance",    icon: Palette, label: "Appearance"    },
+    { id: "privacy",       icon: Shield,  label: "Privacy & Data"},
+    { id: "account",       icon: LogOut,  label: "Account"       },
   ];
-
-  const inputClass = "w-full px-4 py-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-main)] text-sm text-[var(--color-text-header)] placeholder:text-[var(--color-text-body)] placeholder:opacity-30 outline-none focus:border-[var(--color-text-header)] focus:border-opacity-30 transition";
 
   const Toggle = ({ value, onChange }: { value: boolean; onChange: () => void }) => (
     <button
       onClick={onChange}
-      className={`w-11 h-6 flex items-center rounded-full transition-colors duration-200 ${
-        value ? "bg-[var(--color-text-header)]" : "bg-[var(--color-border)]"
-      }`}
+      className="flex items-center rounded-full transition-colors duration-200"
+      style={{
+        width: "44px",
+        height: "24px",
+        backgroundColor: value ? "#E8521A" : "#E2DDD6",
+        flexShrink: 0,
+      }}
     >
-      <div className={`bg-[var(--color-bg-main)] w-4 h-4 rounded-full shadow transform transition-transform duration-200 ${
-        value ? "translate-x-6" : "translate-x-1"
-      }`} />
+      <div
+        className="rounded-full shadow transition-transform duration-200"
+        style={{
+          width: "16px",
+          height: "16px",
+          backgroundColor: "#FFFFFF",
+          transform: value ? "translateX(24px)" : "translateX(4px)",
+        }}
+      />
     </button>
   );
 
@@ -120,113 +140,163 @@ export default function SettingsPage() {
   }: {
     label: string; description?: string; value: boolean; onChange: () => void;
   }) => (
-    <div className="flex items-center justify-between py-3.5 border-b border-[var(--color-border)] last:border-0">
+    <div
+      className="flex items-center justify-between py-4"
+      style={{ borderBottom: "1px solid #E2DDD6" }}
+    >
       <div>
-        <p className="text-sm font-medium text-[var(--color-text-header)]">{label}</p>
-        {description && <p className="text-xs text-[var(--color-text-body)] opacity-40 mt-0.5">{description}</p>}
+        <p style={{ fontSize: "15px", fontWeight: 600, color: "#111111", fontFamily: font }}>
+          {label}
+        </p>
+        {description && (
+          <p style={{ fontSize: "13px", color: "#6b7280", fontFamily: font, marginTop: "2px" }}>
+            {description}
+          </p>
+        )}
       </div>
       <Toggle value={value} onChange={onChange} />
     </div>
   );
 
+  const sectionLabel = (text: string) => (
+    <p style={{ fontSize: "11px", fontWeight: 700, color: "#9ca3af", fontFamily: font, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "20px" }}>
+      {text}
+    </p>
+  );
+
+  const fieldLabel = (text: string) => (
+    <p style={{ fontSize: "13px", fontWeight: 600, color: "#444444", fontFamily: font, marginBottom: "8px" }}>
+      {text}
+    </p>
+  );
+
   return (
-    <div className="min-h-screen bg-[var(--color-bg-main)] p-6 md:p-10">
+    <div className="min-h-screen p-6 md:p-10" style={{ backgroundColor: "#F5F0E8", fontFamily: font }}>
       <div className="max-w-5xl mx-auto">
 
-        {/* Header */}
-        <div className="flex items-start justify-between mb-8">
+        {/* ── Header ── */}
+        <div
+          className="flex items-start justify-between mb-8 pb-5"
+          style={{ borderBottom: "1px solid #E2DDD6" }}
+        >
           <div>
-            <h1 className="text-2xl font-bold text-[var(--color-text-header)]">Settings</h1>
-            <p className="text-[var(--color-text-body)] opacity-50 text-sm mt-1">
+            <h1 style={{ fontWeight: 800, fontSize: "22px", color: "#111111", fontFamily: font, letterSpacing: "-0.02em" }}>
+              Settings
+            </h1>
+            <p style={{ color: "#6b7280", fontSize: "14px", fontFamily: font, fontWeight: 400, marginTop: "4px" }}>
               Manage your account and preferences
             </p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-[var(--color-bg-card)] border border-[var(--color-border)] flex items-center justify-center shrink-0">
-            <Settings size={18} className="text-[var(--color-text-header)]" />
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+            style={{ backgroundColor: "#EDE8DF", border: "1px solid #E2DDD6" }}
+          >
+            <Settings size={18} style={{ color: "#111111" }} />
           </div>
         </div>
 
         <div className="flex flex-col md:flex-row gap-6">
 
-          {/* Sidebar Nav */}
+          {/* ── Sidebar Nav — beige ── */}
           <div className="md:w-52 shrink-0">
-            <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl p-2 space-y-0.5">
-              {navItems.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveSection(item.id)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition ${
-                    activeSection === item.id
-                      ? "bg-[var(--color-text-header)] text-[var(--color-bg-main)] font-medium"
-                      : "text-[var(--color-text-body)] opacity-60 hover:opacity-100 hover:bg-[var(--color-bg-main)]"
-                  }`}
-                >
-                  <item.icon size={15} />
-                  {item.label}
-                </button>
-              ))}
+            <div
+              className="rounded-2xl p-2 space-y-0.5"
+              style={{ backgroundColor: "#EDE8DF", border: "1px solid #E2DDD6" }}
+            >
+              {navItems.map((item) => {
+                const active = activeSection === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveSection(item.id)}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition"
+                    style={{
+                      backgroundColor: active ? "#111111" : "transparent",
+                      color:           active ? "#F5F0E8" : "#444444",
+                      fontWeight:      active ? 600 : 400,
+                      fontFamily: font,
+                    }}
+                    onMouseEnter={e => { if (!active) e.currentTarget.style.backgroundColor = "#D8D1C4"; }}
+                    onMouseLeave={e => { if (!active) e.currentTarget.style.backgroundColor = "transparent"; }}
+                  >
+                    <item.icon size={15} />
+                    {item.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          {/* Main Content */}
+          {/* ── Main Content ── */}
           <div className="flex-1 space-y-4">
 
             {/* Profile */}
             {activeSection === "profile" && (
-              <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl p-6 space-y-5">
-                <h2 className="text-xs font-semibold text-[var(--color-text-body)] opacity-40 uppercase tracking-widest">
-                  Profile
-                </h2>
+              <div
+                className="rounded-2xl p-6 space-y-5"
+                style={{ backgroundColor: "#FFFFFF", border: "1px solid #E2DDD6", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}
+              >
+                {sectionLabel("Profile")}
 
+                {/* Avatar row */}
                 <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-full bg-[var(--color-bg-main)] border border-[var(--color-border)] flex items-center justify-center text-xl font-bold text-[var(--color-text-header)]">
+                  <div
+                    className="w-14 h-14 rounded-full flex items-center justify-center text-xl shrink-0"
+                    style={{ backgroundColor: "#E8521A", color: "#ffffff", fontWeight: 800, fontFamily: font }}
+                  >
                     {name ? name.charAt(0).toUpperCase() : "?"}
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-[var(--color-text-header)]">
+                    <p style={{ fontSize: "15px", fontWeight: 700, color: "#111111", fontFamily: font }}>
                       {name || "Your Name"}
                     </p>
-                    <p className="text-xs text-[var(--color-text-body)] opacity-40">{userEmail}</p>
+                    <p style={{ fontSize: "13px", color: "#9ca3af", fontFamily: font }}>{userEmail}</p>
                   </div>
                 </div>
 
                 <div className="space-y-4">
                   {[
-                    { label: "Full Name", value: name, onChange: setName, placeholder: "Your name" },
-                    { label: "Username", value: username, onChange: setUsername, placeholder: "@username" },
+                    { label: "Full Name", value: name,     onChange: setName,     placeholder: "Your name"  },
+                    { label: "Username",  value: username, onChange: setUsername, placeholder: "@username"  },
                   ].map((field) => (
                     <div key={field.label}>
-                      <label className="block text-xs text-[var(--color-text-body)] opacity-40 mb-2">
-                        {field.label}
-                      </label>
+                      {fieldLabel(field.label)}
                       <input
                         value={field.value}
                         onChange={(e) => field.onChange(e.target.value)}
                         placeholder={field.placeholder}
-                        className={inputClass}
+                        style={{ ...inputStyle }}
+                        onFocus={e => (e.currentTarget.style.borderColor = "#E8521A")}
+                        onBlur={e  => (e.currentTarget.style.borderColor = "#E2DDD6")}
                       />
                     </div>
                   ))}
 
                   <div>
-                    <label className="block text-xs text-[var(--color-text-body)] opacity-40 mb-2">Bio</label>
+                    {fieldLabel("Bio")}
                     <textarea
                       value={bio}
                       onChange={(e) => setBio(e.target.value)}
                       rows={3}
                       placeholder="A short bio about yourself..."
-                      className={`${inputClass} resize-none`}
+                      style={{ ...inputStyle, resize: "none" }}
+                      onFocus={e => (e.currentTarget.style.borderColor = "#E8521A")}
+                      onBlur={e  => (e.currentTarget.style.borderColor = "#E2DDD6")}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs text-[var(--color-text-body)] opacity-40 mb-2">Email</label>
+                    {fieldLabel("Email")}
                     <input
                       value={userEmail}
                       disabled
-                      className="w-full px-4 py-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-main)] text-sm text-[var(--color-text-body)] opacity-30 cursor-not-allowed"
+                      style={{
+                        ...inputStyle,
+                        opacity: 0.5,
+                        cursor: "not-allowed",
+                      }}
                     />
-                    <p className="text-xs text-[var(--color-text-body)] opacity-30 mt-1">
+                    <p style={{ fontSize: "12px", color: "#9ca3af", fontFamily: font, marginTop: "4px" }}>
                       Email cannot be changed here
                     </p>
                   </div>
@@ -236,10 +306,11 @@ export default function SettingsPage() {
 
             {/* Notifications */}
             {activeSection === "notifications" && (
-              <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl p-6 space-y-1">
-                <h2 className="text-xs font-semibold text-[var(--color-text-body)] opacity-40 uppercase tracking-widest mb-4">
-                  Notifications
-                </h2>
+              <div
+                className="rounded-2xl p-6"
+                style={{ backgroundColor: "#FFFFFF", border: "1px solid #E2DDD6", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}
+              >
+                {sectionLabel("Notifications")}
                 <SettingRow
                   label="Mood Reminders"
                   description="Daily reminders to log your mood"
@@ -260,15 +331,14 @@ export default function SettingsPage() {
                 />
                 {notifications && (
                   <div className="pt-4">
-                    <label className="block text-xs text-[var(--color-text-body)] opacity-40 mb-2">
-                      Reminder Time
-                    </label>
+                    {fieldLabel("Reminder Time")}
                     <input
                       type="time"
                       value={reminderTime}
                       onChange={(e) => setReminderTime(e.target.value)}
-                      className={inputClass}
-                      style={{ width: "auto" }}
+                      style={{ ...inputStyle, width: "auto" }}
+                      onFocus={e => (e.currentTarget.style.borderColor = "#E8521A")}
+                      onBlur={e  => (e.currentTarget.style.borderColor = "#E2DDD6")}
                     />
                   </div>
                 )}
@@ -277,21 +347,19 @@ export default function SettingsPage() {
 
             {/* Appearance */}
             {activeSection === "appearance" && (
-              <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl p-6 space-y-5">
-                <h2 className="text-xs font-semibold text-[var(--color-text-body)] opacity-40 uppercase tracking-widest">
-                  Appearance
-                </h2>
-
+              <div
+                className="rounded-2xl p-6 space-y-5"
+                style={{ backgroundColor: "#FFFFFF", border: "1px solid #E2DDD6", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}
+              >
+                {sectionLabel("Appearance")}
                 <div>
-
-                </div>
-
-                <div>
-                  <label className="block text-xs text-[var(--color-text-body)] opacity-40 mb-2">Language</label>
+                  {fieldLabel("Language")}
                   <select
                     value={language}
                     onChange={(e) => setLanguage(e.target.value)}
-                    className={inputClass}
+                    style={{ ...inputStyle }}
+                    onFocus={e => (e.currentTarget.style.borderColor = "#E8521A")}
+                    onBlur={e  => (e.currentTarget.style.borderColor = "#E2DDD6")}
                   >
                     <option value="en">🇬🇧 English</option>
                     <option value="es">🇪🇸 Spanish</option>
@@ -306,10 +374,11 @@ export default function SettingsPage() {
 
             {/* Privacy */}
             {activeSection === "privacy" && (
-              <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl p-6 space-y-1">
-                <h2 className="text-xs font-semibold text-[var(--color-text-body)] opacity-40 uppercase tracking-widest mb-4">
-                  Privacy & Data
-                </h2>
+              <div
+                className="rounded-2xl p-6"
+                style={{ backgroundColor: "#FFFFFF", border: "1px solid #E2DDD6", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}
+              >
+                {sectionLabel("Privacy & Data")}
                 <SettingRow
                   label="Anonymous Community Posts"
                   description="Your name is never shown on community posts"
@@ -323,12 +392,17 @@ export default function SettingsPage() {
                   onChange={() => setShareData(!shareData)}
                 />
                 <div className="pt-4 space-y-3">
-                  <p className="text-xs text-[var(--color-text-body)] opacity-40 leading-relaxed">
+                  <p style={{ fontSize: "13px", color: "#6b7280", fontFamily: font, lineHeight: 1.7 }}>
                     🔒 Your journal entries and mood data are private and encrypted.
                     They are never shared with third parties without your consent.
                   </p>
-                  <button className="flex items-center gap-1 text-xs text-[var(--color-text-body)] opacity-50 hover:opacity-100 transition">
-                    View Privacy Policy <ChevronRight size={12} />
+                  <button
+                    className="flex items-center gap-1 transition"
+                    style={{ fontSize: "13px", fontWeight: 600, color: "#E8521A", fontFamily: font }}
+                    onMouseEnter={e => (e.currentTarget.style.opacity = "0.7")}
+                    onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
+                  >
+                    View Privacy Policy <ChevronRight size={13} />
                   </button>
                 </div>
               </div>
@@ -337,33 +411,56 @@ export default function SettingsPage() {
             {/* Account */}
             {activeSection === "account" && (
               <div className="space-y-4">
-                <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-2xl p-6 space-y-4">
-                  <h2 className="text-xs font-semibold text-[var(--color-text-body)] opacity-40 uppercase tracking-widest">
-                    Account
-                  </h2>
-                  <div className="py-2 border-b border-[var(--color-border)]">
-                    <p className="text-xs text-[var(--color-text-body)] opacity-40">Signed in as</p>
-                    <p className="text-sm text-[var(--color-text-header)] font-medium mt-0.5">{userEmail}</p>
+                {/* Sign out card */}
+                <div
+                  className="rounded-2xl p-6 space-y-4"
+                  style={{ backgroundColor: "#FFFFFF", border: "1px solid #E2DDD6", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}
+                >
+                  {sectionLabel("Account")}
+                  <div className="pb-4" style={{ borderBottom: "1px solid #E2DDD6" }}>
+                    <p style={{ fontSize: "12px", color: "#9ca3af", fontFamily: font }}>Signed in as</p>
+                    <p style={{ fontSize: "15px", fontWeight: 600, color: "#111111", fontFamily: font, marginTop: "2px" }}>
+                      {userEmail}
+                    </p>
                   </div>
                   <button
                     onClick={signOut}
-                    className="w-full flex items-center gap-3 p-3 rounded-xl border border-[var(--color-border)] text-[var(--color-text-body)] opacity-60 hover:opacity-100 hover:border-[var(--color-text-header)] transition text-sm"
+                    className="w-full flex items-center gap-3 p-3 rounded-xl border transition text-sm"
+                    style={{ borderColor: "#E2DDD6", color: "#444444", fontFamily: font, fontWeight: 500 }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = "#111111"; e.currentTarget.style.color = "#111111"; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = "#E2DDD6"; e.currentTarget.style.color = "#444444"; }}
                   >
                     <LogOut size={15} />
                     Sign Out
                   </button>
                 </div>
 
-                <div className="bg-[var(--color-bg-card)] border border-red-500/20 rounded-2xl p-6 space-y-3">
-                  <h2 className="text-xs font-semibold text-red-400 uppercase tracking-widest flex items-center gap-2">
+                {/* Danger zone card */}
+                <div
+                  className="rounded-2xl p-6 space-y-3"
+                  style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(239,68,68,0.2)", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}
+                >
+                  <p
+                    className="flex items-center gap-2"
+                    style={{ fontSize: "11px", fontWeight: 700, color: "#ef4444", fontFamily: font, letterSpacing: "0.08em", textTransform: "uppercase" }}
+                  >
                     <Trash2 size={13} /> Danger Zone
-                  </h2>
-                  <p className="text-sm text-[var(--color-text-body)] opacity-50 leading-relaxed">
+                  </p>
+                  <p style={{ fontSize: "14px", color: "#6b7280", fontFamily: font, fontWeight: 400, lineHeight: 1.75 }}>
                     Permanently delete your account and all associated data. This cannot be undone.
                   </p>
                   <button
                     onClick={deleteAccount}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/8 border border-red-500/20 text-red-400 hover:bg-red-500/15 transition text-sm"
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl border transition text-sm"
+                    style={{
+                      backgroundColor: "rgba(239,68,68,0.06)",
+                      borderColor: "rgba(239,68,68,0.2)",
+                      color: "#ef4444",
+                      fontFamily: font,
+                      fontWeight: 600,
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.backgroundColor = "rgba(239,68,68,0.12)")}
+                    onMouseLeave={e => (e.currentTarget.style.backgroundColor = "rgba(239,68,68,0.06)")}
                   >
                     <Trash2 size={13} />
                     Delete My Account
@@ -372,20 +469,27 @@ export default function SettingsPage() {
               </div>
             )}
 
-            {/* Save Button */}
+            {/* ── Save Button ── */}
             {activeSection !== "account" && (
               <button
                 onClick={saveSettings}
                 disabled={saving}
-                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[var(--color-text-header)] text-[var(--color-bg-main)] font-semibold text-sm hover:opacity-90 transition disabled:opacity-50"
+                className="flex items-center gap-2 px-6 py-3 rounded-xl transition disabled:opacity-50 hover:-translate-y-0.5"
+                style={{
+                  backgroundColor: saved ? "#22c55e" : "#E8521A",
+                  color: "#ffffff",
+                  fontWeight: 700,
+                  fontSize: "15px",
+                  fontFamily: font,
+                  boxShadow: "0 2px 12px rgba(232,82,26,0.3)",
+                  transition: "all 0.3s",
+                }}
+                onMouseEnter={e => { if (!saved) e.currentTarget.style.backgroundColor = "#D4480F"; }}
+                onMouseLeave={e => { if (!saved) e.currentTarget.style.backgroundColor = saved ? "#22c55e" : "#E8521A"; }}
               >
                 {saved ? (
                   <><Check size={15} /> Saved!</>
-                ) : saving ? (
-                  "Saving..."
-                ) : (
-                  "Save Changes"
-                )}
+                ) : saving ? "Saving..." : "Save Changes"}
               </button>
             )}
 

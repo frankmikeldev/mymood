@@ -158,10 +158,14 @@ export default function CommunityPage() {
           </div>
         </div>
 
-        {/* ── Compose box ── */}
+        {/* ── Compose box — white ── */}
         <div
           className="mb-6 rounded-2xl p-5 space-y-4"
-          style={{ backgroundColor: "#EDE8DF", border: "1px solid #E2DDD6" }}
+          style={{
+            backgroundColor: "#FFFFFF",
+            border: "1px solid #E2DDD6",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+          }}
         >
           <div className="flex items-center gap-2">
             <div
@@ -278,12 +282,7 @@ export default function CommunityPage() {
                       <button
                         onClick={() => toggleLike(post.id)}
                         className="flex items-center gap-1.5 transition"
-                        style={{
-                          fontSize: "13px",
-                          fontFamily: font,
-                          color: isLiked ? "#ef4444" : "#9ca3af",
-                          fontWeight: 500,
-                        }}
+                        style={{ fontSize: "13px", fontFamily: font, color: isLiked ? "#ef4444" : "#9ca3af", fontWeight: 500 }}
                         onMouseEnter={e => { if (!isLiked) e.currentTarget.style.color = "#ef4444"; }}
                         onMouseLeave={e => { if (!isLiked) e.currentTarget.style.color = "#9ca3af"; }}
                       >
@@ -294,12 +293,7 @@ export default function CommunityPage() {
                       <button
                         onClick={() => toggleComments(post.id)}
                         className="flex items-center gap-1.5 transition"
-                        style={{
-                          fontSize: "13px",
-                          fontFamily: font,
-                          color: isCommentsOpen ? "#111111" : "#9ca3af",
-                          fontWeight: 500,
-                        }}
+                        style={{ fontSize: "13px", fontFamily: font, color: isCommentsOpen ? "#111111" : "#9ca3af", fontWeight: 500 }}
                         onMouseEnter={e => (e.currentTarget.style.color = "#111111")}
                         onMouseLeave={e => { if (!isCommentsOpen) e.currentTarget.style.color = "#9ca3af"; }}
                       >
@@ -308,10 +302,16 @@ export default function CommunityPage() {
                       </button>
                     </div>
 
-                    {/* ── Comments ── */}
+                    {/* ── Comments section — white card ── */}
                     {isCommentsOpen && (
-                      <div className="mt-4 space-y-3">
-
+                      <div
+                        className="mt-4 rounded-2xl p-4 space-y-3"
+                        style={{
+                          backgroundColor: "#FFFFFF",
+                          border: "1px solid #E2DDD6",
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                        }}
+                      >
                         {(comments[post.id] || []).length === 0 ? (
                           <p style={{ fontSize: "13px", color: "#9ca3af", fontFamily: font }}>
                             No comments yet. Be the first!
@@ -343,7 +343,10 @@ export default function CommunityPage() {
                         )}
 
                         {/* Comment input */}
-                        <div className="flex items-center gap-2 mt-3 pt-3" style={{ borderTop: "1px solid #E2DDD6" }}>
+                        <div
+                          className="flex items-center gap-2 pt-3"
+                          style={{ borderTop: "1px solid #E2DDD6" }}
+                        >
                           <input
                             placeholder="Comment anonymously..."
                             value={newComment}

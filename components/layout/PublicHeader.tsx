@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Smile, Menu, X } from "lucide-react";
+import Image from "next/image";
+import { Menu, X } from "lucide-react";
 
 export default function PublicHeader() {
   const [open, setOpen] = useState(false);
@@ -17,14 +18,17 @@ export default function PublicHeader() {
         {/* Logo */}
         <Link
           href="/"
-          className="flex items-center gap-2 text-lg hover:opacity-80 transition-opacity"
-          style={{ fontWeight: 800, color: "#111111", fontFamily: "'Manrope', sans-serif" }}
+          className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
+          style={{ fontWeight: 800, color: "#111111", fontFamily: "'Manrope', sans-serif", fontSize: "18px" }}
         >
-          <div
-            className="w-8 h-8 rounded-xl flex items-center justify-center"
-            style={{ backgroundColor: "#111111" }}
-          >
-            <Smile className="w-4 h-4" style={{ color: "#F5F0E8" }} />
+          <div className="relative w-8 h-8 shrink-0">
+            <Image
+              src="/images/logo.jpg"
+              alt="MyMood logo"
+              fill
+              style={{ objectFit: "contain" }}
+              priority
+            />
           </div>
           MyMood
         </Link>
@@ -84,11 +88,11 @@ export default function PublicHeader() {
           style={{ backgroundColor: "rgba(255,255,255,0.98)", borderColor: "#E2DDD6" }}
         >
           {[
-            { href: "/", label: "Home" },
-            { href: "/about", label: "About" },
+            { href: "/",        label: "Home"    },
+            { href: "/about",   label: "About"   },
             { href: "/privacy", label: "Privacy" },
-            { href: "/terms", label: "Terms" },
-            { href: "/login", label: "Login" },
+            { href: "/terms",   label: "Terms"   },
+            { href: "/login",   label: "Login"   },
           ].map((item) => (
             <Link
               key={item.href}

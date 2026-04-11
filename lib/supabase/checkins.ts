@@ -3,16 +3,44 @@ import { createClient } from "@/utils/supabase/client";
 
 export const supabase = createClient();
 
-export async function createCheckin({ user_id, mood, emotion, notes }: {
-  user_id?: string,
-  mood: number,
-  emotion?: string,
-  notes?: string
+export async function createCheckin({ user_id, mood, emotion, notes, custom_mood }: {
+  user_id?: string;
+  mood?: number;
+  emotion?: string;
+  notes?: string;
+  custom_mood?: string;
 }) {
-  const { data, error } = await supabase.from("checkins").insert({
-    user_id, mood, emotion, notes
-  }).select().single();
-  if (error) throw error;
+  // ✅ Debug — log exactly what we're sending
+  console.log("createCheckin called with:", { user_id, mood, emotion, notes, custom_mood });
+
+  const insertPayload = {
+    user_id:     user_id     ?? null,
+    mood:        mood        ?? null,
+    emotion:     emotion     ?? null,
+    notes:       notes       ?? null,
+    custom_mood: custom_mood ?? null,
+  };
+
+  console.log("Insert payload:", insertPayload);
+
+  const { data, error } = await supabase
+    .from("checkins")
+    .insert(insertPayload)
+    .select()
+    .single();
+
+  if (error) {
+    // ✅ Log the full Supabase error
+    console.error("Supabase insert error:", {
+      message: error.message,
+      code:    error.code,
+      details: error.details,
+      hint:    error.hint,
+    });
+    throw error;
+  }
+
+  console.log("Checkin saved successfully:", data);
   return data;
 }
 
@@ -27,15 +55,12 @@ export async function getRecentCheckins(user_id: string, limit = 30) {
   return data;
 }
 
-/** aggregated by weekday (0..6) */
 export async function getWeeklySummary(user_id: string) {
   const { data, error } = await supabase.rpc("weekly_mood_summary", { p_user_id: user_id });
-  // if you don't have RPC, fallback to client-side aggregation of last 7 entries
   if (error) throw error;
   return data;
 }
 
-/** todays entry (optional single-entry UX) */
 export async function getTodayCheckin(user_id: string) {
   const { data, error } = await supabase
     .from("checkins")
